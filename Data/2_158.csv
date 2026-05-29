@@ -1,0 +1,12 @@
+﻿Trial_ID,Pitch_Number,Condition_Mode,Selected_Pitch_Type,Selected_Course_Zone,Target_Pos_X,Target_Pos_Y,Target_Pos_Z,Impact_Pos_X,Impact_Pos_Y,Impact_Pos_Z,Noise_Delta_Distance,Mitt_Start_X,Mitt_Start_Y,Mitt_Start_Z,Mitt_Catch_X,Mitt_Catch_Y,Mitt_Catch_Z,Mitt_Movement_Distance,Catch_Result,Batter_Reaction
+Sub_Test01,1,Active_Noise,Straight,Low Center,0.000,0.880,-19.816,1.644,-1.551,-19.816,2.935,-0.007,0.870,-19.815,0.038,0.808,-19.745,0.104,Strike,Take
+Sub_Test01,2,Active_Noise,Straight,Low Center,-0.011,0.864,-19.806,-0.252,0.907,-19.806,0.245,-0.010,0.872,-19.812,-0.053,0.849,-19.773,0.063,Ball_PassedBall,Take
+Sub_Test01,3,Active_Noise,Straight,High Center,-0.050,1.168,-19.778,0.038,1.179,-19.778,0.088,-0.034,1.164,-19.775,-0.030,1.092,-19.757,0.075,Strike_PassedBall,Swing
+Sub_Test01,4,Active_Noise,Straight,High Center,-0.037,1.165,-19.787,0.023,1.215,-19.787,0.078,-0.037,1.162,-19.792,-0.039,1.156,-19.784,0.010,Strike_PassedBall,CheckSwing
+Sub_Test01,5,Active_Noise,Straight,High Inside,-0.117,1.179,-19.783,-0.115,1.093,-19.783,0.086,-0.087,1.163,-19.772,-0.077,1.172,-19.764,0.015,Strike,CheckSwing
+Sub_Test01,6,Active_Noise,Straight,Low Center,-0.067,0.863,-19.783,-0.174,0.721,-19.783,0.178,-0.061,0.861,-19.783,-0.052,0.857,-19.770,0.017,Strike_PassedBall,CheckSwing
+Sub_Test01,7,Active_Noise,Straight,Low Inside,-0.081,0.893,-19.796,-0.118,0.668,-19.796,0.228,-0.078,0.883,-19.785,-0.052,0.850,-19.749,0.055,Strike_PassedBall,Take
+Sub_Test01,8,Active_Noise,Straight,Mid Inside,-0.074,0.914,-19.771,-0.305,0.823,-19.771,0.248,-0.070,0.904,-19.769,-0.095,0.854,-19.735,0.065,Ball_PassedBall,CheckSwing
+Sub_Test01,9,Active_Noise,Straight,Low Center,-0.039,0.871,-19.780,1.736,-1.854,-19.780,3.253,-0.025,0.872,-19.778,-0.026,0.858,-19.765,0.020,Strike,CheckSwing
+Sub_Test01,10,Active_Noise,Straight,Low Outside,0.100,0.867,-19.788,2.295,-3.907,-19.788,5.254,0.095,0.871,-19.789,-0.015,0.833,-19.759,0.120,Strike,Swing
+Sub_Test01,11,Active_Noise,Straight,Low Outside,0.080,0.867,-19.781,0.096,0.624,-19.781,0.243,0.074,0.865,-19.783,-0.006,0.830,-19.754,0.092,Strike_PassedBall,Swing

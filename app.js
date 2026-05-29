@@ -1,88 +1,119 @@
-// グローバル変数でチャートのインスタンスと生データを保持
-let pitchChart = null;
+let errorChart = null;
 let logData = [];
 
-// ページ読み込み時に初期化処理を実行
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. 外部JSONファイルからログデータを取得
     logData = await fetchLogData();
+    populateSelectOptions();
 
-    // 2. セレクトボックスの変更イベントを設定
-    const filters = ['userSelect', 'pitchSelect', 'courseSelect'];
+    const filters = ['datasetSelect', 'speedSelect', 'planeSelect'];
     filters.forEach(id => {
         document.getElementById(id).addEventListener('change', renderChart);
     });
 
-    // 3. 初回のグラフ描画
     renderChart();
 });
 
-/**
- * 外部のdata.jsonからデータを非同期取得する関数
- */
 async function fetchLogData() {
     try {
         const response = await fetch('data.json');
-        if (!response.ok) {
-            throw new Error('データの取得に失敗しました．');
-        }
+        if (!response.ok) throw new Error('データ取得失敗');
         return await response.json();
     } catch (error) {
         console.error('Error fetching data:', error);
-        // フォールバック用の最小限のダミーデータ
-        return [
-            { id: 1, user: 'userA', pitch: 'fastball', course: 'inside', x: -0.4, y: 1.1, success: true }
-        ];
+        return [];
     }
 }
 
-/**
- * フィルター条件に基づいてデータを抽出し，グラフを再描画する関数
- */
+function populateSelectOptions() {
+    const datasets = [...new Set(logData.map(d => d.dataset))].sort();
+    const speeds = [...new Set(logData.map(d => d.speed))].sort();
+
+    const addOptions = (selectId, values) => {
+        const select = document.getElementById(selectId);
+        values.forEach(val => {
+            const opt = document.createElement('option');
+            opt.value = val;
+            opt.textContent = val;
+            select.appendChild(opt);
+        });
+    };
+
+    addOptions('datasetSelect', datasets);
+    addOptions('speedSelect', speeds);
+}
+
+// Pythonコードのクリッピング関数を再現
+function clip(val, limit = 0.38) {
+    return Math.max(-limit, Math.min(limit, val));
+}
+
+// 捕球結果のカテゴリ分け（Pythonと同一ロジック）
+function categorizeCatch(res) {
+    if (res.includes('WildPitch')) return 'Missed';
+    if (res.includes('PassedBall')) return 'Dropped';
+    return 'Perfect';
+}
+
 function renderChart() {
-    const userFilter = document.getElementById('userSelect').value;
-    const pitchFilter = document.getElementById('pitchSelect').value;
-    const courseFilter = document.getElementById('courseSelect').value;
+    const datasetFilter = document.getElementById('datasetSelect').value;
+    const speedFilter = document.getElementById('speedSelect').value;
+    const plane = document.getElementById('planeSelect').value; // 'XY' or 'ZY'
 
-    // データのフィルタリング処理
-    const filteredData = logData.filter(d => {
-        return (userFilter === 'all' || d.user === userFilter) &&
-               (pitchFilter === 'all' || d.pitch === pitchFilter) &&
-               (courseFilter === 'all' || d.course === courseFilter);
-    });
+    // フィルタリングと座標計算
+    const processedData = logData
+        .filter(d => (datasetFilter === 'all' || d.dataset === datasetFilter))
+        .filter(d => (speedFilter === 'all' || d.speed === speedFilter))
+        .map(d => {
+            const diffX = clip(d.mitt_x - d.target_x);
+            const diffY = clip(d.mitt_y - d.target_y);
+            const diffZ = clip(d.mitt_z - d.target_z);
+            
+            return {
+                x: plane === 'XY' ? diffX : diffZ,
+                y: diffY,
+                category: categorizeCatch(d.catch_result)
+            };
+        });
 
-    // フレーミングの結果（成功/失敗）に応じてデータセットを分離
-    const successData = filteredData.filter(d => d.success).map(d => ({ x: d.x, y: d.y }));
-    const failData = filteredData.filter(d => !d.success).map(d => ({ x: d.x, y: d.y }));
+    // カテゴリごとのデータセット分割
+    const perfectData = processedData.filter(d => d.category === 'Perfect');
+    const droppedData = processedData.filter(d => d.category === 'Dropped');
+    const missedData = processedData.filter(d => d.category === 'Missed');
 
-    const ctx = document.getElementById('pitchChart').getContext('2d');
-    
-    // 既存のチャートが存在する場合は破棄してメモリを解放（描画バグ防止）
-    if (pitchChart) {
-        pitchChart.destroy();
-    }
+    const ctx = document.getElementById('errorChart').getContext('2d');
+    if (errorChart) errorChart.destroy();
 
-    // CSSからテーマカラーの値を動的に取得（色の一元管理のため）
-    const style = getComputedStyle(document.documentElement);
-    const primaryColor = style.getPropertyValue('--primary-color').trim();
-    const accentColor = style.getPropertyValue('--accent-color').trim();
+    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#004b87';
 
-    // 散布図の生成
-    pitchChart = new Chart(ctx, {
+    errorChart = new Chart(ctx, {
         type: 'scatter',
         data: {
             datasets: [
                 {
-                    label: 'フレーミング成功',
-                    data: successData,
+                    label: 'Perfect',
+                    data: perfectData,
                     backgroundColor: primaryColor,
+                    borderColor: primaryColor,
+                    pointStyle: 'circle',
                     pointRadius: 6
                 },
                 {
-                    label: 'フレーミング失敗',
-                    data: failData,
-                    backgroundColor: accentColor,
+                    label: 'Dropped',
+                    data: droppedData,
+                    backgroundColor: 'transparent',
+                    borderColor: primaryColor,
+                    borderWidth: 2,
+                    pointStyle: 'rect', // 四角（□）
                     pointRadius: 6
+                },
+                {
+                    label: 'Missed',
+                    data: missedData,
+                    backgroundColor: primaryColor,
+                    borderColor: primaryColor,
+                    borderWidth: 2,
+                    pointStyle: 'crossRot', // バツ印（×）
+                    pointRadius: 7
                 }
             ]
         },
@@ -91,12 +122,17 @@ function renderChart() {
             maintainAspectRatio: false,
             scales: {
                 x: {
-                    title: { display: true, text: '水平座標 (m)' },
-                    min: -1.5, max: 1.5
+                    title: { 
+                        display: true, 
+                        text: plane === 'XY' ? 'Mitt_Catch_X - Target_Pos_X [m]' : 'Mitt_Catch_Z - Target_Pos_Z [m]'
+                    },
+                    min: -0.4, max: 0.4,
+                    grid: { color: '#ddd', drawBorder: true }
                 },
                 y: {
-                    title: { display: true, text: '垂直座標 (m)' },
-                    min: 0, max: 2.0
+                    title: { display: true, text: 'Mitt_Catch_Y - Target_Pos_Y [m]' },
+                    min: -0.4, max: 0.4,
+                    grid: { color: '#ddd', drawBorder: true }
                 }
             },
             plugins: {

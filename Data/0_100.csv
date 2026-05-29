@@ -1,0 +1,27 @@
+﻿Trial_ID,Pitch_Number,Condition_Mode,Selected_Pitch_Type,Selected_Course_Zone,Target_Pos_X,Target_Pos_Y,Target_Pos_Z,Impact_Pos_X,Impact_Pos_Y,Impact_Pos_Z,Noise_Delta_Distance,Mitt_Start_X,Mitt_Start_Y,Mitt_Start_Z,Mitt_Catch_X,Mitt_Catch_Y,Mitt_Catch_Z,Mitt_Movement_Distance,Catch_Result,Batter_Reaction
+Sub_Test01,1,Active_Noise,Straight,Mid Center,0.001,1.076,-19.702,0.083,1.299,-19.702,0.238,0.014,0.808,-19.849,0.031,1.266,-19.670,0.493,Strike,Take
+Sub_Test01,2,Active_Noise,Straight,Mid Center,-0.026,1.083,-19.802,-0.169,0.925,-19.802,0.212,-0.013,0.754,-19.846,-0.237,1.067,-19.766,0.394,Strike,Take
+Sub_Test01,3,Active_Noise,Straight,Mid Center,-0.014,1.086,-19.793,-0.050,1.180,-19.793,0.100,-0.137,0.570,-19.868,-0.069,1.180,-19.839,0.615,Strike,CheckSwing
+Sub_Test01,4,Active_Noise,Straight,Mid Center,0.010,1.087,-19.838,0.059,1.299,-19.838,0.218,-0.090,0.600,-19.864,0.034,1.288,-19.793,0.703,Ball_PassedBall,CheckSwing
+Sub_Test01,5,Active_Noise,Straight,Mid Center,-0.004,1.068,-19.790,-0.168,1.224,-19.790,0.226,-0.049,0.646,-19.872,-0.237,1.219,-19.805,0.607,Strike,Swing
+Sub_Test01,6,Active_Noise,Straight,High Center,-0.003,1.112,-19.825,-0.120,1.335,-19.825,0.252,-0.026,0.599,-19.895,-0.176,1.374,-19.766,0.800,Strike,Swing
+Sub_Test01,7,Active_Noise,Straight,Mid Center,-0.014,1.036,-19.798,-0.171,0.976,-19.798,0.167,-0.109,0.567,-19.848,-0.246,1.120,-19.801,0.572,Strike,CheckSwing
+Sub_Test01,8,Active_Noise,Straight,Mid Center,0.003,1.031,-19.778,0.045,1.171,-19.778,0.146,0.027,0.760,-19.819,-0.018,1.220,-19.659,0.489,Strike,Swing
+Sub_Test01,9,Active_Noise,Straight,Mid Center,0.005,1.022,-19.734,0.161,0.942,-19.734,0.176,-0.048,0.726,-19.800,0.123,0.976,-19.695,0.320,Strike,CheckSwing
+Sub_Test01,10,Active_Noise,Straight,Mid Center,0.020,1.040,-19.721,0.082,1.266,-19.721,0.235,0.040,0.864,-19.841,0.037,1.301,-19.681,0.465,Strike,Take
+Sub_Test01,11,Active_Noise,Straight,Mid Center,-0.001,1.041,-19.733,-0.018,1.237,-19.733,0.196,-0.080,0.591,-19.817,-0.084,1.333,-19.758,0.744,Strike,CheckSwing
+Sub_Test01,12,Active_Noise,Straight,Mid Center,0.017,0.981,-19.744,0.107,1.138,-19.744,0.181,-0.010,0.773,-19.829,0.141,1.208,-19.737,0.470,Strike_PassedBall,CheckSwing
+Sub_Test01,13,Active_Noise,Straight,Mid Center,0.005,0.992,-19.751,-0.104,0.989,-19.751,0.110,0.006,0.720,-19.852,-0.165,0.988,-19.771,0.328,Strike,CheckSwing
+Sub_Test01,14,Active_Noise,Straight,Mid Center,0.009,1.022,-19.744,0.043,0.973,-19.744,0.060,-0.014,0.948,-19.755,0.014,1.017,-19.730,0.079,Strike,Swing
+Sub_Test01,15,Active_Noise,Straight,Mid Center,0.012,1.018,-19.776,0.208,1.086,-19.776,0.207,-0.004,0.863,-19.865,0.228,1.069,-19.699,0.352,Strike,CheckSwing
+Sub_Test01,16,Active_Noise,Straight,Mid Inside,-0.091,1.002,-19.786,-0.024,0.859,-19.786,0.158,-0.076,0.794,-19.849,-0.018,0.895,-19.781,0.135,Strike,CheckSwing
+Sub_Test01,17,Active_Noise,Straight,Mid Center,0.008,1.042,-19.816,-0.200,1.011,-19.816,0.210,-0.084,0.676,-19.869,-0.290,0.954,-19.794,0.354,Strike,CheckSwing
+Sub_Test01,18,Active_Noise,Straight,Mid Center,-0.005,1.033,-19.817,-0.182,1.100,-19.817,0.188,-0.027,0.816,-19.859,-0.278,1.035,-19.806,0.338,Strike,Take
+Sub_Test01,19,Active_Noise,Straight,Mid Center,0.020,1.011,-19.737,0.038,0.978,-19.737,0.037,-0.028,0.810,-19.834,0.023,0.907,-19.693,0.179,Strike,CheckSwing
+Sub_Test01,20,Active_Noise,Straight,Mid Center,0.012,0.940,-19.755,-0.159,0.810,-19.755,0.215,-0.085,0.575,-19.846,-0.235,0.758,-19.736,0.261,Strike,Swing
+Sub_Test01,21,Active_Noise,Straight,Mid Center,-0.007,0.989,-19.785,-0.160,1.113,-19.785,0.197,-0.052,0.713,-19.832,-0.200,1.040,-19.706,0.380,Strike,Swing
+Sub_Test01,22,Active_Noise,Straight,Mid Center,-0.012,1.003,-19.756,-0.171,0.933,-19.756,0.173,-0.032,0.944,-19.722,-0.251,0.850,-19.723,0.238,Strike,CheckSwing
+Sub_Test01,23,Active_Noise,Straight,Mid Center,-0.025,0.990,-19.710,-0.208,1.008,-19.710,0.184,-0.056,0.751,-19.820,-0.330,0.975,-19.709,0.371,Strike,Swing
+Sub_Test01,24,Active_Noise,Straight,Mid Center,-0.018,0.982,-19.744,-0.166,1.005,-19.744,0.150,-0.088,0.707,-19.811,-0.262,1.004,-19.756,0.349,Strike,Take
+Sub_Test01,25,Active_Noise,Straight,Mid Center,-0.015,1.009,-19.736,0.135,0.922,-19.736,0.174,-0.022,0.870,-19.773,0.150,0.965,-19.713,0.205,Strike,Take
+Sub_Test01,26,Active_Noise,Straight,Mid Center,-0.019,0.999,-19.702,0.124,1.099,-19.702,0.175,-0.013,0.855,-19.780,0.156,1.115,-19.652,0.335,Strike,CheckSwing

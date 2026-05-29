@@ -1,0 +1,12 @@
+﻿Trial_ID,Pitch_Number,Condition_Mode,Selected_Pitch_Type,Selected_Course_Zone,Target_Pos_X,Target_Pos_Y,Target_Pos_Z,Impact_Pos_X,Impact_Pos_Y,Impact_Pos_Z,Noise_Delta_Distance,Mitt_Start_X,Mitt_Start_Y,Mitt_Start_Z,Mitt_Catch_X,Mitt_Catch_Y,Mitt_Catch_Z,Mitt_Movement_Distance,Catch_Result,Batter_Reaction
+Sub_Test01,1,Active_Noise,Straight,Low Center Ball,0.029,0.468,-19.829,-0.158,0.409,-19.829,0.196,-0.018,0.830,-19.910,-0.130,0.507,-19.754,0.376,Strike,Swing
+Sub_Test01,2,Active_Noise,Straight,Low Center,-0.036,0.762,-19.831,0.017,0.977,-19.831,0.222,-0.013,0.804,-19.816,-0.035,0.854,-19.771,0.070,Strike,Take
+Sub_Test01,3,Active_Noise,Straight,Low Center,0.011,0.754,-19.861,0.092,0.690,-19.861,0.103,-0.037,0.821,-19.852,0.013,0.788,-19.824,0.066,Strike_PassedBall,Take
+Sub_Test01,4,Active_Noise,Straight,Low Center,0.047,0.747,-19.887,-0.018,0.669,-19.887,0.101,-0.024,0.800,-19.842,-0.067,0.569,-19.696,0.276,Strike_PassedBall,CheckSwing
+Sub_Test01,5,Active_Noise,Straight,Low Center,-0.047,0.773,-19.860,-0.186,0.686,-19.860,0.164,-0.022,0.785,-19.828,-0.209,0.725,-19.720,0.224,Strike,Take
+Sub_Test01,6,Active_Noise,Straight,Low Center,-0.036,0.762,-19.846,0.229,0.894,-19.846,0.296,0.000,0.794,-19.825,0.065,0.722,-19.757,0.119,Strike,Take
+Sub_Test01,7,Active_Noise,Straight,Low Center Ball,-0.044,0.715,-19.825,0.110,0.812,-19.825,0.182,-0.032,0.777,-19.817,0.113,0.760,-19.733,0.169,Strike,CheckSwing
+Sub_Test01,8,Active_Noise,Straight,Low Center Ball,-0.041,0.684,-19.863,0.133,0.707,-19.863,0.176,-0.008,0.805,-19.814,0.119,0.701,-19.751,0.175,Strike_PassedBall,Swing
+Sub_Test01,9,Active_Noise,Straight,Low Outside,0.087,0.739,-19.917,0.093,0.538,-19.917,0.201,-0.003,0.820,-19.830,0.032,0.473,-19.754,0.357,Ball_PassedBall,Take
+Sub_Test01,10,Active_Noise,Straight,Low Center Ball,-0.014,0.692,-19.874,0.145,0.545,-19.874,0.217,-0.022,0.773,-19.813,0.105,0.455,-19.716,0.356,Ball_PassedBall,Take
+Sub_Test01,11,Active_Noise,Straight,Low Center,0.011,0.751,-19.860,0.037,0.655,-19.860,0.100,-0.042,0.783,-19.832,0.007,0.419,-19.648,0.411,Strike_PassedBall,Take

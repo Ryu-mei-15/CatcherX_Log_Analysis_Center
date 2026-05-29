@@ -12,6 +12,8 @@
     <header class="main-header">
         <h1>VR Content CatcherX: における身体拡張とフレーミング技術のログ分析</h1>
         <p class="author">山口 瑞悠（福知山公立大学 情報学部 情報学科）</p>
+        <p class="author">藤井 叙人（福知山公立大学 情報学部 情報学科）</p>
+        <p class="author">橋田 光代（福知山公立大学 情報学部 情報学科）</p>
     </header>
 
     <div class="container">
@@ -25,40 +27,34 @@
         </section>
 
         <section id="dashboard" class="card">
-            <h2>インタラクティブ・データログ</h2>
+            <h2>キャプチャ誤差 インタラクティブ分析</h2>
             
             <div class="controls">
                 <div class="control-group">
-                    <label for="userSelect">被験者ID</label>
-                    <select id="userSelect">
-                        <option value="all">全員</option>
-                        <option value="userA">被験者A (経験者)</option>
-                        <option value="userB">被験者B (未経験者)</option>
-                    </select>
+                    <label for="datasetSelect">被験者 (Dataset)</label>
+                    <select id="datasetSelect">
+                        <option value="all">全データセット</option>
+                        </select>
                 </div>
                 <div class="control-group">
-                    <label for="pitchSelect">球種</label>
-                    <select id="pitchSelect">
-                        <option value="all">すべての球種</option>
-                        <option value="fastball">ストレート</option>
-                        <option value="slider">スライダー</option>
-                        <option value="curve">カーブ</option>
-                    </select>
+                    <label for="speedSelect">球速</label>
+                    <select id="speedSelect">
+                        <option value="all">すべての球速</option>
+                        </select>
                 </div>
                 <div class="control-group">
-                    <label for="courseSelect">投球コース</label>
-                    <select id="courseSelect">
-                        <option value="all">すべてのコース</option>
-                        <option value="inside">インコース</option>
-                        <option value="outside">アウトコース</option>
+                    <label for="planeSelect">投影平面</label>
+                    <select id="planeSelect">
+                        <option value="XY">XY平面 (水平 vs 垂直)</option>
+                        <option value="ZY">ZY平面 (深度 vs 垂直)</option>
                     </select>
                 </div>
             </div>
 
             <div class="chart-container">
-                <canvas id="pitchChart"></canvas>
+                <canvas id="errorChart"></canvas>
             </div>
-            <p class="chart-caption">※図中の枠線は仮想的なストライクゾーンを示す</p>
+            <p class="chart-caption">※ 誤差は ±0.38m でクリッピングして表示しています．〇: Perfect, □: Dropped, ×: Missed</p>
         </section>
     </div>
 

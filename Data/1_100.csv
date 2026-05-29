@@ -1,0 +1,11 @@
+﻿Trial_ID,Pitch_Number,Condition_Mode,Selected_Pitch_Type,Selected_Course_Zone,Target_Pos_X,Target_Pos_Y,Target_Pos_Z,Impact_Pos_X,Impact_Pos_Y,Impact_Pos_Z,Noise_Delta_Distance,Mitt_Start_X,Mitt_Start_Y,Mitt_Start_Z,Mitt_Catch_X,Mitt_Catch_Y,Mitt_Catch_Z,Mitt_Movement_Distance,Catch_Result,Batter_Reaction
+Sub_Test01,1,Active_Noise,Straight,Low Center,-0.057,0.844,-19.602,-0.077,0.613,-19.602,0.231,-0.049,0.810,-19.597,-0.065,0.765,-19.569,0.056,Ball_PassedBall,Take
+Sub_Test01,2,Active_Noise,Straight,Low Center,-0.046,0.823,-19.598,-0.107,0.643,-19.598,0.189,-0.055,0.844,-19.564,-0.126,0.742,-19.495,0.142,Strike_PassedBall,CheckSwing
+Sub_Test01,3,Active_Noise,Straight,Low Center,-0.054,0.833,-19.587,0.078,0.898,-19.587,0.147,-0.061,0.825,-19.581,0.064,0.764,-19.561,0.141,Strike,Take
+Sub_Test01,4,Active_Noise,Straight,Low Center,-0.043,0.812,-19.589,0.077,0.702,-19.589,0.163,-0.048,0.810,-19.591,0.012,0.781,-19.575,0.069,Strike_PassedBall,Take
+Sub_Test01,5,Active_Noise,Straight,Low Center,-0.044,0.816,-19.598,-0.245,0.796,-19.598,0.201,-0.050,0.816,-19.593,-0.195,0.775,-19.542,0.159,Strike,Swing
+Sub_Test01,6,Active_Noise,Straight,Low Center,-0.056,0.827,-19.619,-0.154,0.881,-19.619,0.111,-0.062,0.828,-19.617,-0.153,0.865,-19.565,0.112,Strike_PassedBall,Swing
+Sub_Test01,7,Active_Noise,Straight,Low Center,-0.069,0.815,-19.615,-0.016,1.017,-19.615,0.208,-0.070,0.819,-19.611,-0.038,0.841,-19.590,0.044,Strike,Swing
+Sub_Test01,8,Active_Noise,Straight,Low Center,-0.051,0.820,-19.627,-0.135,0.681,-19.627,0.163,-0.058,0.826,-19.623,-0.119,0.794,-19.526,0.120,Strike,Take
+Sub_Test01,9,Active_Noise,Straight,Low Center,-0.064,0.807,-19.611,0.103,0.693,-19.611,0.202,-0.066,0.812,-19.609,0.083,0.853,-19.580,0.157,Strike_PassedBall,CheckSwing
+Sub_Test01,10,Active_Noise,Straight,Low Center,-0.034,0.788,-19.621,0.050,0.773,-19.621,0.085,-0.035,0.788,-19.618,0.010,0.843,-19.594,0.076,Strike,Take
