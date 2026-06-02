@@ -1,0 +1,12 @@
+Trial_ID,Pitch_Number,Condition_Mode,Selected_Pitch_Type,Pitch_Speed_Kmph,Selected_Course_Zone,Target_Pos_X,Target_Pos_Y,Target_Pos_Z,Impact_Pos_X,Impact_Pos_Y,Impact_Pos_Z,Noise_Delta_Distance,Mitt_Start_X,Mitt_Start_Y,Mitt_Start_Z,Mitt_Catch_X,Mitt_Catch_Y,Mitt_Catch_Z,Mitt_Movement_Distance,Catch_Result,Batter_Reaction
+Sub_Test01,1,Active_Noise,Straight,159.7,Mid Center,0.011,1.037,-19.791,0.011,1.038,-19.791,0.001,0.011,1.063,-19.787,0.011,1.032,-19.778,0.032,Strike,Take
+Sub_Test01,2,Active_Noise,Slider,130.4,Mid Center,0.005,0.913,-19.786,0.003,0.907,-19.786,0.006,0.000,0.904,-19.785,0.000,0.904,-19.782,0.003,Strike_PassedBall,Swing
+Sub_Test01,3,Active_Noise,Splitter,133.1,Low Inside,-0.145,0.867,-19.818,-0.145,0.865,-19.818,0.002,-0.158,0.860,-19.814,-0.149,0.881,-19.806,0.025,Strike_PassedBall,CheckSwing
+Sub_Test01,4,Active_Noise,VSlider,130.0,Mid Outside,0.150,1.056,-19.816,0.145,1.058,-19.816,0.006,0.179,1.008,-19.826,0.118,1.031,-19.818,0.066,Strike_PassedBall,CheckSwing
+Sub_Test01,5,Active_Noise,Fork,129.6,Mid Outside,0.191,1.010,-19.813,0.191,1.008,-19.813,0.002,0.205,1.002,-19.817,0.209,1.002,-19.817,0.004,Strike_PassedBall,Take
+Sub_Test01,6,Active_Noise,Eephus,59.7,Mid Outside,0.182,1.020,-19.851,0.182,1.005,-19.851,0.015,0.183,1.016,-19.842,0.158,1.038,-19.853,0.035,Strike,CheckSwing
+Sub_Test01,7,Active_Noise,Sweeper,128.9,High Inside,-0.151,1.200,-19.824,-0.158,1.201,-19.824,0.007,-0.148,1.201,-19.796,-0.163,1.211,-19.797,0.018,Ball_PassedBall,CheckSwing
+Sub_Test01,8,Active_Noise,Sweeper,128.1,High Inside,-0.153,1.209,-19.812,-0.159,1.209,-19.812,0.007,-0.157,1.199,-19.821,-0.113,1.217,-19.792,0.056,Ball,CheckSwing
+Sub_Test01,9,Active_Noise,DCurve,112.6,Mid Center,0.005,0.933,-19.798,-0.008,0.950,-19.798,0.022,0.001,0.920,-19.801,0.003,0.929,-19.799,0.010,Strike_PassedBall,Swing
+Sub_Test01,10,Active_Noise,FourseamGyro,142.5,Low Inside,-0.124,0.833,-19.817,-0.126,0.832,-19.817,0.002,-0.126,0.854,-19.811,-0.098,0.837,-19.795,0.036,Strike_PassedBall,CheckSwing
+Sub_Test01,11,Active_Noise,Straight,158.1,Mid Center,0.011,0.961,-19.824,0.011,0.960,-19.824,0.001,0.035,0.969,-19.826,0.023,0.969,-19.821,0.012,Strike,Take

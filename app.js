@@ -17,6 +17,7 @@ const courseMapping = [
     ['Low Inside Ball', 'Low Inside Center Ball', 'Low Center Ball', 'Low Outside Center Ball', 'Low Outside Ball']
 ];
 
+// --- 2つ目のグラフ用：投球コースを矢印のマーカーとして描画するプラグイン ---
 const courseArrowPlugin = {
     id: 'courseArrowPlugin',
     afterDatasetsDraw(chart) {
@@ -96,7 +97,7 @@ Chart.register(courseArrowPlugin);
 document.addEventListener('DOMContentLoaded', async () => {
     logData = await fetchLogData();
     generateUI();
-    setupActionButtons(); // ボタン処理の初期化
+    setupActionButtons();
     renderChart();
 });
 
@@ -150,7 +151,7 @@ function createCheckboxes(containerId, name, values) {
     });
 }
 
-// 全選択・全解除ボタンのロジック
+// --- 全選択・全解除ボタンのロジック ---
 function setupActionButtons() {
     document.querySelectorAll('.select-all').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -193,6 +194,21 @@ function renderChart() {
     const selectedPlayers = getCheckedValues('player');
     const selectedSpeeds = getCheckedValues('speed');
     const selectedCourses = getCheckedValues('course');
+
+    // --- 抽出条件テキストの生成と表示 ---
+    const totalPlayers = document.querySelectorAll('input[name="player"]').length;
+    const totalSpeeds = document.querySelectorAll('input[name="speed"]').length;
+    const totalCourses = document.querySelectorAll('input[name="course"]').length;
+
+    const pText = selectedPlayers.length === totalPlayers ? '全プレイヤー' : (selectedPlayers.length === 0 ? 'なし' : selectedPlayers.join(', '));
+    const sText = selectedSpeeds.length === totalSpeeds ? '全球速' : (selectedSpeeds.length === 0 ? 'なし' : selectedSpeeds.join(', '));
+    const cText = selectedCourses.length === totalCourses ? '全25コース' : (selectedCourses.length === 0 ? 'なし' : selectedCourses.join(', '));
+    const statusText = `表示対象: ${pText} ｜ ${sText} ｜ ${cText}`;
+    
+    const status1 = document.getElementById('filterStatus1');
+    const status2 = document.getElementById('filterStatus2');
+    if (status1) status1.textContent = statusText;
+    if (status2) status2.textContent = statusText;
 
     const datasetsXY = [];
     const datasetsZY = [];
@@ -251,6 +267,7 @@ function renderChart() {
             hitRadius: 6    
         };
 
+        // ZY平面の分身の術バグ修正済み
         datasetsXY.push({ ...config1, data: points1.map(p => ({ ...p, x: p.x, y: p.y })) });
         datasetsZY.push({ ...config1, data: points1.map(p => ({ ...p, x: p.diffZ, y: p.y })) });
         
