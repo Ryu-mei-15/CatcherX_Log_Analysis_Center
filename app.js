@@ -17,7 +17,13 @@ const courseMapping = [
     ['Low Inside Ball', 'Low Inside Center Ball', 'Low Center Ball', 'Low Outside Center Ball', 'Low Outside Ball']
 ];
 
-// --- 2つ目のグラフ用：投球コースを矢印のマーカーとして描画するプラグイン ---
+// ▼ 追加：ストライクゾーン（内側3x3）の定義
+const strikeZoneCourses = [
+    'High Inside', 'High Center', 'High Outside',
+    'Mid Inside', 'Mid Center', 'Mid Outside',
+    'Low Inside', 'Low Center', 'Low Outside'
+];
+
 const courseArrowPlugin = {
     id: 'courseArrowPlugin',
     afterDatasetsDraw(chart) {
@@ -151,7 +157,6 @@ function createCheckboxes(containerId, name, values) {
     });
 }
 
-// --- 全選択・全解除ボタンのロジック ---
 function setupActionButtons() {
     document.querySelectorAll('.select-all').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -172,6 +177,17 @@ function setupActionButtons() {
             renderChart();
         });
     });
+
+    // ▼ 追加：ストライクゾーン一括選択ボタンの挙動
+    document.querySelectorAll('.select-strike-zone').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll(`input[name="course"]`).forEach(cb => {
+                // strikeZoneCoursesに含まれる名前ならチェックを入れ、それ以外は外す
+                cb.checked = strikeZoneCourses.includes(cb.value);
+            });
+            renderChart();
+        });
+    });
 }
 
 function getCheckedValues(name) {
@@ -179,7 +195,6 @@ function getCheckedValues(name) {
     return Array.from(checkboxes).map(cb => cb.value);
 }
 
-// ★ クリッピング範囲も cm 単位 (38) に変更
 function clip(val, limit = 38) {
     return Math.max(-limit, Math.min(limit, val));
 }
@@ -196,14 +211,28 @@ function renderChart() {
     const selectedSpeeds = getCheckedValues('speed');
     const selectedCourses = getCheckedValues('course');
 
-    // --- 抽出条件テキストの生成と表示 ---
     const totalPlayers = document.querySelectorAll('input[name="player"]').length;
     const totalSpeeds = document.querySelectorAll('input[name="speed"]').length;
     const totalCourses = document.querySelectorAll('input[name="course"]').length;
 
+    // ▼ 追加：ストライクゾーンのみが選択されているかの判定
+    const isStrikeZoneOnly = selectedCourses.length === strikeZoneCourses.length && 
+                             selectedCourses.every(c => strikeZoneCourses.includes(c));
+
     const pText = selectedPlayers.length === totalPlayers ? '全プレイヤー' : (selectedPlayers.length === 0 ? 'なし' : selectedPlayers.join(', '));
     const sText = selectedSpeeds.length === totalSpeeds ? '全球速' : (selectedSpeeds.length === 0 ? 'なし' : selectedSpeeds.join(', '));
-    const cText = selectedCourses.length === totalCourses ? '全25コース' : (selectedCourses.length === 0 ? 'なし' : selectedCourses.join(', '));
+    
+    // ▼ 変更：表示テキストのスマート化
+    let cText = '';
+    if (selectedCourses.length === totalCourses) {
+        cText = '全25コース';
+    } else if (selectedCourses.length === 0) {
+        cText = 'なし';
+    } else if (isStrikeZoneOnly) {
+        cText = 'ストライクゾーン (9マス)';
+    } else {
+        cText = selectedCourses.join(', ');
+    }
 
     const statusText = `表示対象: ${pText} ｜ ${sText} ｜ ${cText}`;
     
@@ -229,7 +258,6 @@ function renderChart() {
         const points2 = []; 
 
         playerData.forEach(d => {
-            // ★ m から cm への変換 (100倍)
             const diffX = clip((d.mitt_x - d.target_x) * 100);
             const diffY = clip((d.mitt_y - d.target_y) * 100);
             const diffZ = clip((d.mitt_z - d.target_z) * 100);
@@ -277,7 +305,6 @@ function renderChart() {
         datasetsCourseZY.push({ ...config2, data: points2.map(p => ({ ...p, x: p.diffZ, y: p.y })) });
     });
 
-    // ★ 軸ラベルを cm に変更
     drawChart('errorChartXY', datasetsXY, 'Mitt_Catch_X - Target_Pos_X [cm]', chartXY, (c) => chartXY = c);
     drawChart('errorChartZY', datasetsZY, 'Mitt_Catch_Z - Target_Pos_Z [cm]', chartZY, (c) => chartZY = c);
     drawChart('errorChartCourseXY', datasetsCourseXY, 'Mitt_Catch_X - Target_Pos_X [cm]', chartCourseXY, (c) => chartCourseXY = c);
@@ -295,7 +322,6 @@ function drawChart(canvasId, datasets, xLabel, chartInstance, setChartInstance) 
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                // ★ グラフの表示範囲を ±0.4 から ±40 (cm) に変更
                 x: { title: { display: true, text: xLabel }, min: -40, max: 40, grid: { color: '#eee', drawBorder: true } },
                 y: { title: { display: true, text: 'Mitt_Catch_Y - Target_Pos_Y [cm]' }, min: -40, max: 40, grid: { color: '#eee', drawBorder: true } }
             },
@@ -304,7 +330,6 @@ function drawChart(canvasId, datasets, xLabel, chartInstance, setChartInstance) 
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            // ★ ツールチップの表示も少数第1位 (例: 12.5) に変更
                             return `[${context.raw._course}] ${context.raw._rawResult} (${context.parsed.x.toFixed(1)}, ${context.parsed.y.toFixed(1)})`;
                         }
                     }
