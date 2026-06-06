@@ -5,7 +5,7 @@ let chartCourseZY = null;
 let logData = [];
 
 const colorPalette = [
-    '#004b87', '#e74c3c', '#2ecc71', '#f39c12', 
+    '#004b87', '#e74c3c', '#2ecc71', '#f39c12',
     '#9b59b6', '#34495e', '#1abc9c', '#d35400'
 ];
 
@@ -17,12 +17,43 @@ const courseMapping = [
     ['Low Inside Ball', 'Low Inside Center Ball', 'Low Center Ball', 'Low Outside Center Ball', 'Low Outside Ball']
 ];
 
-// ▼ 追加：ストライクゾーン（内側3x3）の定義
 const strikeZoneCourses = [
     'High Inside', 'High Center', 'High Outside',
     'Mid Inside', 'Mid Center', 'Mid Outside',
     'Low Inside', 'Low Center', 'Low Outside'
 ];
+
+const courseLabelMap = {
+    'High Inside Ball': '高め内角ボール',
+    'High Inside Center Ball': '高め内角寄りボール',
+    'High Center Ball': '高め中央ボール',
+    'High Outside Center Ball': '高め外角寄りボール',
+    'High Outside Ball': '高め外角ボール',
+
+    'Mid-High Inside Ball': '中高め内角ボール',
+    'High Inside': '高め内角',
+    'High Center': '高め中央',
+    'High Outside': '高め外角',
+    'Mid-High Outside Ball': '中高め外角ボール',
+
+    'Mid Inside Ball': '中央内角ボール',
+    'Mid Inside': '中央内角',
+    'Mid Center': '中央',
+    'Mid Outside': '中央外角',
+    'Mid Outside Ball': '中央外角ボール',
+
+    'Mid-Low Inside Ball': '中低め内角ボール',
+    'Low Inside': '低め内角',
+    'Low Center': '低め中央',
+    'Low Outside': '低め外角',
+    'Mid-Low Outside Ball': '中低め外角ボール',
+
+    'Low Inside Ball': '低め内角ボール',
+    'Low Inside Center Ball': '低め内角寄りボール',
+    'Low Center Ball': '低め中央ボール',
+    'Low Outside Center Ball': '低め外角寄りボール',
+    'Low Outside Ball': '低め外角ボール'
+};
 
 const courseArrowPlugin = {
     id: 'courseArrowPlugin',
@@ -30,6 +61,7 @@ const courseArrowPlugin = {
         if (!chart.canvas.id.includes('Course')) return;
 
         const ctx = chart.ctx;
+
         chart.data.datasets.forEach((dataset, i) => {
             const meta = chart.getDatasetMeta(i);
             if (meta.hidden) return;
@@ -44,7 +76,9 @@ const courseArrowPlugin = {
                 const isStrike = raw._rawResult.includes('Strike');
                 const color = dataset.borderColor;
 
-                let yDir = 0, xDir = 0;
+                let yDir = 0;
+                let xDir = 0;
+
                 if (course.includes('High')) yDir = -1;
                 if (course.includes('Low')) yDir = 1;
                 if (course.includes('Inside')) xDir = -1;
@@ -56,6 +90,7 @@ const courseArrowPlugin = {
                 if (yDir === 0 && xDir === 0) {
                     ctx.beginPath();
                     ctx.arc(0, 0, 5, 0, 2 * Math.PI);
+
                     if (isStrike) {
                         ctx.fillStyle = color;
                         ctx.fill();
@@ -67,9 +102,10 @@ const courseArrowPlugin = {
                 } else {
                     const angle = Math.atan2(yDir, xDir);
                     ctx.rotate(angle);
-                    
+
                     const size = 6;
                     ctx.beginPath();
+
                     if (isStrike) {
                         ctx.moveTo(-size, -size * 0.6);
                         ctx.lineTo(0, -size * 0.6);
@@ -84,14 +120,15 @@ const courseArrowPlugin = {
                     } else {
                         ctx.moveTo(-size, 0);
                         ctx.lineTo(size, 0);
-                        ctx.moveTo(size/2, -size/2);
+                        ctx.moveTo(size / 2, -size / 2);
                         ctx.lineTo(size, 0);
-                        ctx.lineTo(size/2, size/2);
+                        ctx.lineTo(size / 2, size / 2);
                         ctx.strokeStyle = color;
                         ctx.lineWidth = 1.5;
                         ctx.stroke();
                     }
                 }
+
                 ctx.restore();
             });
         });
@@ -110,7 +147,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function fetchLogData() {
     try {
         const response = await fetch('data.json');
-        if (!response.ok) throw new Error('データ取得失敗');
+        if (!response.ok) throw new Error('データ取得に失敗しました．');
         return await response.json();
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -119,40 +156,47 @@ async function fetchLogData() {
 }
 
 function generateUI() {
-    const players = [...new Set(logData.map(d => d.player))].sort();
-    const speeds = [...new Set(logData.map(d => d.speed))].sort();
+    const players = [...new Set(logData.map(d => String(d.player)))].sort();
+    const speeds = [...new Set(logData.map(d => String(d.speed)))].sort((a, b) => Number(a) - Number(b));
 
     createCheckboxes('playerCheckboxes', 'player', players);
-    createCheckboxes('speedCheckboxes', 'speed', speeds);
+    createCheckboxes('speedCheckboxes', 'speed', speeds, formatSpeedLabel);
 
     const gridContainer = document.getElementById('courseGrid');
+
     courseMapping.flat().forEach(courseValue => {
         const label = document.createElement('label');
         label.className = 'sz-cell';
+        label.title = courseLabelMap[courseValue] || courseValue;
+
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.name = 'course';
         checkbox.value = courseValue;
         checkbox.checked = true;
         checkbox.addEventListener('change', renderChart);
+
         label.appendChild(checkbox);
         gridContainer.appendChild(label);
     });
 }
 
-function createCheckboxes(containerId, name, values) {
+function createCheckboxes(containerId, name, values, formatter = v => v) {
     const container = document.getElementById(containerId);
+
     values.forEach(val => {
         const label = document.createElement('label');
         label.className = 'checkbox-label';
+
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.value = val;
         checkbox.name = name;
         checkbox.checked = true;
         checkbox.addEventListener('change', renderChart);
+
         label.appendChild(checkbox);
-        label.appendChild(document.createTextNode(val));
+        label.appendChild(document.createTextNode(formatter(val)));
         container.appendChild(label);
     });
 }
@@ -160,31 +204,38 @@ function createCheckboxes(containerId, name, values) {
 function setupActionButtons() {
     document.querySelectorAll('.select-all').forEach(btn => {
         btn.addEventListener('click', (e) => {
+            e.preventDefault();
             const targetName = e.target.getAttribute('data-target');
+
             document.querySelectorAll(`input[name="${targetName}"]`).forEach(cb => {
                 cb.checked = true;
             });
+
             renderChart();
         });
     });
 
     document.querySelectorAll('.deselect-all').forEach(btn => {
         btn.addEventListener('click', (e) => {
+            e.preventDefault();
             const targetName = e.target.getAttribute('data-target');
+
             document.querySelectorAll(`input[name="${targetName}"]`).forEach(cb => {
                 cb.checked = false;
             });
+
             renderChart();
         });
     });
 
-    // ▼ 追加：ストライクゾーン一括選択ボタンの挙動
     document.querySelectorAll('.select-strike-zone').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+
             document.querySelectorAll(`input[name="course"]`).forEach(cb => {
-                // strikeZoneCoursesに含まれる名前ならチェックを入れ、それ以外は外す
                 cb.checked = strikeZoneCourses.includes(cb.value);
             });
+
             renderChart();
         });
     });
@@ -206,6 +257,47 @@ function categorizeCatch(res) {
     return 'Perfect';
 }
 
+function formatSpeedLabel(speed) {
+    const text = String(speed);
+    return text.includes('km') ? text : `${text} km/h`;
+}
+
+function formatCourseLabel(course) {
+    return courseLabelMap[course] || course;
+}
+
+function formatCatchResult(result) {
+    if (result.includes('WildPitch')) return '暴投';
+    if (result.includes('PassedBall')) return 'パスボール';
+    if (result.includes('Missed')) return '見送り';
+    if (result.includes('Perfect')) return '正常捕球';
+    return result;
+}
+
+function formatJudgment(result) {
+    if (result.includes('Strike')) return 'ストライク判定';
+    if (result.includes('Ball')) return 'ボール判定';
+    return '判定情報なし';
+}
+
+function formatSelectedItems(values, totalCount, allLabel, emptyLabel, formatter = v => v) {
+    if (values.length === totalCount) return allLabel;
+    if (values.length === 0) return emptyLabel;
+    return values.map(formatter).join(', ');
+}
+
+function getCourseSelectionText(selectedCourses, totalCourses) {
+    const isStrikeZoneOnly =
+        selectedCourses.length === strikeZoneCourses.length &&
+        selectedCourses.every(c => strikeZoneCourses.includes(c));
+
+    if (selectedCourses.length === totalCourses) return '全25コース';
+    if (selectedCourses.length === 0) return 'なし';
+    if (isStrikeZoneOnly) return 'ストライクゾーン（9マス）';
+
+    return `${selectedCourses.length}コース`;
+}
+
 function renderChart() {
     const selectedPlayers = getCheckedValues('player');
     const selectedSpeeds = getCheckedValues('speed');
@@ -215,29 +307,15 @@ function renderChart() {
     const totalSpeeds = document.querySelectorAll('input[name="speed"]').length;
     const totalCourses = document.querySelectorAll('input[name="course"]').length;
 
-    // ▼ 追加：ストライクゾーンのみが選択されているかの判定
-    const isStrikeZoneOnly = selectedCourses.length === strikeZoneCourses.length && 
-                             selectedCourses.every(c => strikeZoneCourses.includes(c));
+    const playerText = formatSelectedItems(selectedPlayers, totalPlayers, '全プレイヤー', 'なし');
+    const speedText = formatSelectedItems(selectedSpeeds, totalSpeeds, '全球速', 'なし', formatSpeedLabel);
+    const courseText = getCourseSelectionText(selectedCourses, totalCourses);
 
-    const pText = selectedPlayers.length === totalPlayers ? '全プレイヤー' : (selectedPlayers.length === 0 ? 'なし' : selectedPlayers.join(', '));
-    const sText = selectedSpeeds.length === totalSpeeds ? '全球速' : (selectedSpeeds.length === 0 ? 'なし' : selectedSpeeds.join(', '));
-    
-    // ▼ 変更：表示テキストのスマート化
-    let cText = '';
-    if (selectedCourses.length === totalCourses) {
-        cText = '全25コース';
-    } else if (selectedCourses.length === 0) {
-        cText = 'なし';
-    } else if (isStrikeZoneOnly) {
-        cText = 'ストライクゾーン (9マス)';
-    } else {
-        cText = selectedCourses.join(', ');
-    }
+    const statusText = `表示条件：プレイヤー ${playerText} ｜ 球速 ${speedText} ｜ コース ${courseText}`;
 
-    const statusText = `表示対象: ${pText} ｜ ${sText} ｜ ${cText}`;
-    
     const status1 = document.getElementById('filterStatus1');
     const status2 = document.getElementById('filterStatus2');
+
     if (status1) status1.textContent = statusText;
     if (status2) status2.textContent = statusText;
 
@@ -248,94 +326,202 @@ function renderChart() {
 
     selectedPlayers.forEach((playerName, index) => {
         const playerColor = colorPalette[index % colorPalette.length];
-        const playerData = logData.filter(d => 
-            d.player === playerName && selectedSpeeds.includes(d.speed) && selectedCourses.includes(d.course)
+
+        const playerData = logData.filter(d =>
+            String(d.player) === String(playerName) &&
+            selectedSpeeds.includes(String(d.speed)) &&
+            selectedCourses.includes(String(d.course))
         );
 
         if (playerData.length === 0) return;
 
-        const points1 = []; 
-        const points2 = []; 
+        const pointsForCatchResult = [];
+        const pointsForCourse = [];
 
         playerData.forEach(d => {
             const diffX = clip((d.mitt_x - d.target_x) * 100);
             const diffY = clip((d.mitt_y - d.target_y) * 100);
             const diffZ = clip((d.mitt_z - d.target_z) * 100);
-            
+
             const category = categorizeCatch(d.catch_result);
-            
+
             let styleResult = 'circle';
             let radiusResult = 6;
-            if (category === 'PassedBall') { styleResult = 'rect'; }
-            if (category === 'WildPitch') { styleResult = 'crossRot'; radiusResult = 8; }
-            if (category === 'Ignored') { styleResult = 'triangle'; radiusResult = 7; }
+
+            if (category === 'PassedBall') {
+                styleResult = 'rect';
+            }
+
+            if (category === 'WildPitch') {
+                styleResult = 'crossRot';
+                radiusResult = 8;
+            }
+
+            if (category === 'Ignored') {
+                styleResult = 'triangle';
+                radiusResult = 7;
+            }
 
             const baseInfo = {
                 y: diffY,
                 _category: category,
                 _rawResult: d.catch_result,
-                _course: d.course
+                _course: d.course,
+                _speed: d.speed,
+                _player: d.player
             };
 
-            points1.push({ x: diffX, diffZ: diffZ, _pointStyle: styleResult, _radius: radiusResult, ...baseInfo });
-            points2.push({ x: diffX, diffZ: diffZ, ...baseInfo });
+            pointsForCatchResult.push({
+                x: diffX,
+                diffZ: diffZ,
+                _pointStyle: styleResult,
+                _radius: radiusResult,
+                ...baseInfo
+            });
+
+            pointsForCourse.push({
+                x: diffX,
+                diffZ: diffZ,
+                ...baseInfo
+            });
         });
 
-        const config1 = {
+        const catchResultConfig = {
             label: playerName,
             backgroundColor: playerColor,
             borderColor: playerColor,
             borderWidth: 2,
             pointStyle: (ctx) => ctx.raw ? ctx.raw._pointStyle : 'circle',
-            pointRadius: (ctx) => ctx.raw ? ctx.raw._radius : 6,
+            pointRadius: (ctx) => ctx.raw ? ctx.raw._radius : 6
         };
 
-        const config2 = {
+        const courseConfig = {
             label: playerName,
             backgroundColor: playerColor,
             borderColor: playerColor,
-            pointRadius: 0, 
-            hitRadius: 6    
+            pointRadius: 0,
+            hitRadius: 6
         };
 
-        datasetsXY.push({ ...config1, data: points1.map(p => ({ ...p, x: p.x, y: p.y })) });
-        datasetsZY.push({ ...config1, data: points1.map(p => ({ ...p, x: p.diffZ, y: p.y })) });
-        
-        datasetsCourseXY.push({ ...config2, data: points2.map(p => ({ ...p, x: p.x, y: p.y })) });
-        datasetsCourseZY.push({ ...config2, data: points2.map(p => ({ ...p, x: p.diffZ, y: p.y })) });
+        datasetsXY.push({
+            ...catchResultConfig,
+            data: pointsForCatchResult.map(p => ({ ...p, x: p.x, y: p.y }))
+        });
+
+        datasetsZY.push({
+            ...catchResultConfig,
+            data: pointsForCatchResult.map(p => ({ ...p, x: p.diffZ, y: p.y }))
+        });
+
+        datasetsCourseXY.push({
+            ...courseConfig,
+            data: pointsForCourse.map(p => ({ ...p, x: p.x, y: p.y }))
+        });
+
+        datasetsCourseZY.push({
+            ...courseConfig,
+            data: pointsForCourse.map(p => ({ ...p, x: p.diffZ, y: p.y }))
+        });
     });
 
-    drawChart('errorChartXY', datasetsXY, 'Mitt_Catch_X - Target_Pos_X [cm]', chartXY, (c) => chartXY = c);
-    drawChart('errorChartZY', datasetsZY, 'Mitt_Catch_Z - Target_Pos_Z [cm]', chartZY, (c) => chartZY = c);
-    drawChart('errorChartCourseXY', datasetsCourseXY, 'Mitt_Catch_X - Target_Pos_X [cm]', chartCourseXY, (c) => chartCourseXY = c);
-    drawChart('errorChartCourseZY', datasetsCourseZY, 'Mitt_Catch_Z - Target_Pos_Z [cm]', chartCourseZY, (c) => chartCourseZY = c);
+    drawChart(
+        'errorChartXY',
+        datasetsXY,
+        'X軸方向の捕球誤差 [cm]（左 − / 右 +）',
+        chartXY,
+        (c) => chartXY = c
+    );
+
+    drawChart(
+        'errorChartZY',
+        datasetsZY,
+        'Z軸方向の捕球誤差 [cm]（後方 − / 前方 +）',
+        chartZY,
+        (c) => chartZY = c
+    );
+
+    drawChart(
+        'errorChartCourseXY',
+        datasetsCourseXY,
+        'X軸方向の捕球誤差 [cm]（左 − / 右 +）',
+        chartCourseXY,
+        (c) => chartCourseXY = c
+    );
+
+    drawChart(
+        'errorChartCourseZY',
+        datasetsCourseZY,
+        'Z軸方向の捕球誤差 [cm]（後方 − / 前方 +）',
+        chartCourseZY,
+        (c) => chartCourseZY = c
+    );
 }
 
 function drawChart(canvasId, datasets, xLabel, chartInstance, setChartInstance) {
     if (chartInstance) chartInstance.destroy();
+
     const ctx = document.getElementById(canvasId).getContext('2d');
 
     const newChart = new Chart(ctx, {
         type: 'scatter',
-        data: { datasets: datasets },
+        data: {
+            datasets: datasets
+        },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                x: { title: { display: true, text: xLabel }, min: -40, max: 40, grid: { color: '#eee', drawBorder: true } },
-                y: { title: { display: true, text: 'Mitt_Catch_Y - Target_Pos_Y [cm]' }, min: -40, max: 40, grid: { color: '#eee', drawBorder: true } }
+                x: {
+                    title: {
+                        display: true,
+                        text: xLabel
+                    },
+                    min: -40,
+                    max: 40,
+                    grid: {
+                        color: '#eee',
+                        drawBorder: true
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Y軸方向の捕球誤差 [cm]（下 − / 上 +）'
+                    },
+                    min: -40,
+                    max: 40,
+                    grid: {
+                        color: '#eee',
+                        drawBorder: true
+                    }
+                }
             },
             plugins: {
-                legend: { display: false },
+                legend: {
+                    display: false
+                },
                 tooltip: {
                     callbacks: {
+                        title: function(context) {
+                            const raw = context[0].raw;
+                            return `${raw._player} / ${formatSpeedLabel(raw._speed)}`;
+                        },
                         label: function(context) {
-                            return `[${context.raw._course}] ${context.raw._rawResult} (${context.parsed.x.toFixed(1)}, ${context.parsed.y.toFixed(1)})`;
+                            const raw = context.raw;
+                            const x = context.parsed.x.toFixed(1);
+                            const y = context.parsed.y.toFixed(1);
+
+                            return [
+                                `投球コース：${formatCourseLabel(raw._course)}`,
+                                `捕球結果：${formatCatchResult(raw._rawResult)}（${formatJudgment(raw._rawResult)}）`,
+                                `表示座標：(${x}, ${y}) cm`
+                            ];
                         }
                     }
                 }
             }
         }
     });
+
     setChartInstance(newChart);
 }

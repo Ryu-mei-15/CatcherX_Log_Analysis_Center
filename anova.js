@@ -1,5 +1,7 @@
 let logData = [];
-let chartX = null, chartY = null, chartZ = null;
+let chartX = null;
+let chartY = null;
+let chartZ = null;
 let pyodide = null;
 let currentAnovaResults = null;
 let currentActiveTab = 'axisX';
@@ -14,7 +16,6 @@ const courseMapping = [
     ['Low Inside Ball', 'Low Inside Center Ball', 'Low Center Ball', 'Low Outside Center Ball', 'Low Outside Ball']
 ];
 
-// ▼ 追加：ストライクゾーンの定義
 const strikeZoneCourses = [
     'High Inside', 'High Center', 'High Outside',
     'Mid Inside', 'Mid Center', 'Mid Outside',
@@ -22,15 +23,33 @@ const strikeZoneCourses = [
 ];
 
 const staticInsights = {
-    axisX: "【論文掲載時の全体考察】<br>X軸のズレ（巻き込みやフレーミング）は，球速が何km/hであろうと一切影響を受けません．しかし，被験者間では明確な有意差が出ています．これは「水平方向のミット操作は，外部環境に乱されることのないプレイヤ固有の極めて強固なバイアスである」という仮説を裏付けています．",
-    axisY: "【論文掲載時の全体考察】<br>垂直方向の誤差は，被験者の違いよりも「球速」によって劇的に支配されています．100 km/hではほぼ0だった誤差が，158 km/hになると被験者全員がマイナス方向（下方向）へ大きくミットを落としています．さらに交互作用が有意であるため，誰がどれくらいトラッキングを崩壊させるかには個人の熟練度が関わっていることが示唆されます．",
-    axisZ: "【論文掲載時の全体考察】<br>Z軸（前後のズレ）は本実験で最も面白い指標です．「前で迎え撃つか」「的で待つか」は被験者ごとに全く異なります．同時に球速の主効果も極めて強力であり，時間的余裕が奪われるにつれて，ある者はさらに前に突撃し，ある者は反応できずに後ろへ差し込まれるという「極限状態における三次元的な空間認識のバグ」が炙り出されています．"
+    axisX: `
+        <strong>解釈の補助</strong><br>
+        X軸方向の誤差は，球速条件による変化が比較的小さい一方で，
+        プレイヤー間の差が確認される場合がある．
+        このことから，本データの範囲では，水平方向のミット位置のずれに，
+        球速よりもプレイヤー固有の操作傾向が反映されている可能性がある．
+    `,
+    axisY: `
+        <strong>解釈の補助</strong><br>
+        Y軸方向の誤差は，球速条件によって変化する傾向が見られる．
+        特に高い球速条件では，目標位置に対してミット位置が下方向にずれる例が確認される．
+        また，プレイヤーと球速の交互作用が見られる場合，
+        球速上昇に対するミット操作の変化量がプレイヤーによって異なる可能性が示唆される．
+    `,
+    axisZ: `
+        <strong>解釈の補助</strong><br>
+        Z軸方向の誤差は，捕球時にボールを前方で迎えるか，
+        あるいは目標位置付近で待つかといった捕球方略の違いを反映する指標として解釈できる．
+        球速条件による変化に加えて，プレイヤーごとの違いも確認される場合，
+        高速球に対する奥行き方向の調整方略が個人によって異なる可能性がある．
+    `
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
     pyodide = await loadPyodide();
-    await pyodide.loadPackage(["pandas", "statsmodels"]);
-    
+    await pyodide.loadPackage(['pandas', 'statsmodels']);
+
     document.getElementById('loading-overlay').style.display = 'none';
 
     logData = await fetchLogData();
@@ -38,10 +57,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupActionButtons();
 
     const tabs = document.querySelectorAll('.anova-tab');
+
     tabs.forEach(tab => {
         tab.addEventListener('click', (e) => {
             tabs.forEach(t => t.classList.remove('active'));
             e.target.classList.add('active');
+
             currentActiveTab = e.target.getAttribute('data-target');
             renderAnovaTab();
         });
@@ -53,37 +74,55 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function fetchLogData() {
     try {
         const response = await fetch('data.json');
+        if (!response.ok) throw new Error('データ取得に失敗しました．');
         return await response.json();
     } catch (error) {
-        console.error('Error:', error); return [];
+        console.error('Error:', error);
+        return [];
     }
 }
 
 function generateUI() {
     const players = [...new Set(logData.map(d => String(d.player)))].sort();
-    const speeds = [...new Set(logData.map(d => String(d.speed)))].sort();
-    
+    const speeds = [...new Set(logData.map(d => String(d.speed)))].sort((a, b) => Number(a) - Number(b));
+
     createCheckboxes('playerCheckboxes', 'player', players);
-    createCheckboxes('speedCheckboxes', 'speed', speeds);
+    createCheckboxes('speedCheckboxes', 'speed', speeds, formatSpeedLabel);
 
     const gridContainer = document.getElementById('courseGrid');
+
     courseMapping.flat().forEach(courseValue => {
-        const label = document.createElement('label'); label.className = 'sz-cell';
-        const checkbox = document.createElement('input'); checkbox.type = 'checkbox';
-        checkbox.name = 'course'; checkbox.value = courseValue; checkbox.checked = true;
+        const label = document.createElement('label');
+        label.className = 'sz-cell';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.name = 'course';
+        checkbox.value = courseValue;
+        checkbox.checked = true;
         checkbox.addEventListener('change', executeAnalysis);
-        label.appendChild(checkbox); gridContainer.appendChild(label);
+
+        label.appendChild(checkbox);
+        gridContainer.appendChild(label);
     });
 }
 
-function createCheckboxes(containerId, name, values) {
+function createCheckboxes(containerId, name, values, formatter = v => v) {
     const container = document.getElementById(containerId);
+
     values.forEach(val => {
-        const label = document.createElement('label'); label.className = 'checkbox-label';
-        const checkbox = document.createElement('input'); checkbox.type = 'checkbox';
-        checkbox.value = val; checkbox.name = name; checkbox.checked = true;
+        const label = document.createElement('label');
+        label.className = 'checkbox-label';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = val;
+        checkbox.name = name;
+        checkbox.checked = true;
         checkbox.addEventListener('change', executeAnalysis);
-        label.appendChild(checkbox); label.appendChild(document.createTextNode(val));
+
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(formatter(val)));
         container.appendChild(label);
     });
 }
@@ -91,25 +130,40 @@ function createCheckboxes(containerId, name, values) {
 function setupActionButtons() {
     document.querySelectorAll('.select-all').forEach(btn => {
         btn.addEventListener('click', async (e) => {
-            const t = e.target.getAttribute('data-target');
-            document.querySelectorAll(`input[name="${t}"]`).forEach(cb => cb.checked = true);
+            e.preventDefault();
+
+            const targetName = e.target.getAttribute('data-target');
+
+            document.querySelectorAll(`input[name="${targetName}"]`).forEach(cb => {
+                cb.checked = true;
+            });
+
             await executeAnalysis();
         });
     });
+
     document.querySelectorAll('.deselect-all').forEach(btn => {
         btn.addEventListener('click', async (e) => {
-            const t = e.target.getAttribute('data-target');
-            document.querySelectorAll(`input[name="${t}"]`).forEach(cb => cb.checked = false);
+            e.preventDefault();
+
+            const targetName = e.target.getAttribute('data-target');
+
+            document.querySelectorAll(`input[name="${targetName}"]`).forEach(cb => {
+                cb.checked = false;
+            });
+
             await executeAnalysis();
         });
     });
-    
-    // ▼ 追加：ストライクゾーン一括選択ボタンの挙動（Python再実行を伴う）
+
     document.querySelectorAll('.select-strike-zone').forEach(btn => {
-        btn.addEventListener('click', async () => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+
             document.querySelectorAll(`input[name="course"]`).forEach(cb => {
                 cb.checked = strikeZoneCourses.includes(cb.value);
             });
+
             await executeAnalysis();
         });
     });
@@ -119,43 +173,52 @@ function getCheckedValues(name) {
     return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(cb => cb.value);
 }
 
+function formatSpeedLabel(speed) {
+    const text = String(speed);
+    return text.includes('km') ? text : `${text} km/h`;
+}
+
+function getCourseSelectionText(selectedCourses, totalCourses) {
+    const isStrikeZoneOnly =
+        selectedCourses.length === strikeZoneCourses.length &&
+        selectedCourses.every(c => strikeZoneCourses.includes(c));
+
+    if (selectedCourses.length === totalCourses) return '全25コース';
+    if (selectedCourses.length === 0) return 'なし';
+    if (isStrikeZoneOnly) return 'ストライクゾーン（9マス）';
+
+    return `${selectedCourses.length}コース`;
+}
+
 async function executeAnalysis() {
     const selectedPlayers = getCheckedValues('player');
     const selectedSpeeds = getCheckedValues('speed');
     const selectedCourses = getCheckedValues('course');
     const totalCourses = document.querySelectorAll('input[name="course"]').length;
 
-    // ▼ 追加：ストライクゾーンのみか判定
-    const isStrikeZoneOnly = selectedCourses.length === strikeZoneCourses.length && 
-                             selectedCourses.every(c => strikeZoneCourses.includes(c));
+    const courseText = getCourseSelectionText(selectedCourses, totalCourses);
 
-    let cText = '';
-    if (selectedCourses.length === totalCourses) {
-        cText = '全25コース';
-    } else if (selectedCourses.length === 0) {
-        cText = 'なし';
-    } else if (isStrikeZoneOnly) {
-        cText = 'ストライクゾーン (9マス)';
-    } else {
-        cText = `${selectedCourses.length}コース`;
-    }
-
-    document.getElementById('filterStatus').textContent = `抽出: プレイヤー(${selectedPlayers.length}) ｜ 球速(${selectedSpeeds.length}) ｜ コース(${cText})`;
+    document.getElementById('filterStatus').textContent =
+        `解析条件：プレイヤー ${selectedPlayers.length}名 ｜ 球速 ${selectedSpeeds.length}条件 ｜ コース ${courseText}`;
 
     renderComparisonCharts(selectedPlayers, selectedSpeeds, selectedCourses);
 
     if (selectedPlayers.length < 2 || selectedSpeeds.length < 2 || selectedCourses.length === 0) {
-        currentAnovaResults = { error: "二元配置分散分析（主効果と交互作用）を計算するには，プレイヤーと球速をそれぞれ2つ以上選択してください．" };
+        currentAnovaResults = {
+            error: '二元配置分散分析を行うには，プレイヤーと球速をそれぞれ2条件以上選択してください．'
+        };
         renderAnovaTab();
         return;
     }
 
     const filteredForPython = [];
+
     logData.forEach(d => {
-        if (selectedPlayers.includes(String(d.player)) && 
-            selectedSpeeds.includes(String(d.speed)) && 
-            selectedCourses.includes(String(d.course))) {
-            
+        if (
+            selectedPlayers.includes(String(d.player)) &&
+            selectedSpeeds.includes(String(d.speed)) &&
+            selectedCourses.includes(String(d.course))
+        ) {
             filteredForPython.push({
                 player: String(d.player),
                 speed: String(d.speed),
@@ -176,6 +239,7 @@ from statsmodels.formula.api import ols
 import json
 
 output_json = ""
+
 try:
     data = js.anovaDataForPython.to_py()
     df = pd.DataFrame(data)
@@ -186,7 +250,7 @@ try:
     for js_key, col in axes.items():
         model = ols(f"{col} ~ C(player) + C(speed) + C(player):C(speed)", data=df).fit()
         aov = sm.stats.anova_lm(model, typ=2)
-        
+
         def extract(row_name):
             return {
                 'F': float(aov.loc[row_name, 'F']),
@@ -200,8 +264,9 @@ try:
             'speed': extract('C(speed)'),
             'interaction': extract('C(player):C(speed)')
         }
-    
+
     output_json = json.dumps(results)
+
 except Exception as e:
     output_json = json.dumps({"error": str(e)})
 
@@ -212,9 +277,11 @@ output_json
         const resultJson = await pyodide.runPythonAsync(pythonCode);
         currentAnovaResults = JSON.parse(resultJson);
     } catch (e) {
-        currentAnovaResults = { error: "Python実行エラー: " + e.message };
+        currentAnovaResults = {
+            error: '統計解析の実行中にエラーが発生しました：' + e.message
+        };
     }
-    
+
     renderAnovaTab();
 }
 
@@ -224,31 +291,62 @@ function formatPValue(p) {
         const mantissa = (p / Math.pow(10, exponent)).toFixed(2);
         return `p = ${mantissa} \\times 10^{${exponent}}`;
     }
+
     return `p = ${p.toFixed(3)}`;
 }
 
 function evaluateSignificance(p) {
-    if (p < 0.001) return { class: 'sig-high', text: '極めて強い有意差' };
-    if (p < 0.05) return { class: 'sig-yes', text: '有意差あり' };
-    if (p < 0.1) return { class: 'sig-trend', text: '有意傾向' };
+    if (p < 0.001) {
+        return { class: 'sig-high', text: '有意差あり（p < .001）' };
+    }
+
+    if (p < 0.05) {
+        return { class: 'sig-yes', text: '有意差あり（p < .05）' };
+    }
+
+    if (p < 0.1) {
+        return { class: 'sig-trend', text: '有意傾向（p < .10）' };
+    }
+
     return { class: 'sig-no', text: '有意差なし' };
 }
 
 function renderAnovaTab() {
     const container = document.getElementById('anovaContent');
-    
+
+    if (!currentAnovaResults) return;
+
     if (currentAnovaResults.error) {
-        container.innerHTML = `<div class="result-card"><h3 style="color:#e74c3c;">解析エラー</h3><p>${currentAnovaResults.error}</p></div>`;
+        container.innerHTML = `
+            <div class="result-card">
+                <h3 style="color:#e74c3c;">解析条件を確認してください</h3>
+                <p>${currentAnovaResults.error}</p>
+            </div>
+        `;
         return;
     }
 
     const data = currentAnovaResults[currentActiveTab];
-    const titles = { axisX: "X軸 (水平方向)", axisY: "Y軸 (垂直方向)", axisZ: "Z軸 (奥行き方向)" };
-    
+
+    const titles = {
+        axisX: 'X軸方向の捕球誤差に対する二元配置分散分析',
+        axisY: 'Y軸方向の捕球誤差に対する二元配置分散分析',
+        axisZ: 'Z軸方向の捕球誤差に対する二元配置分散分析'
+    };
+
     const buildStatBox = (label, stat) => {
-        if (!stat || isNaN(stat.F)) return `<div class="stat-box"><h4>${label}</h4><p>データ不足</p></div>`;
+        if (!stat || isNaN(stat.F)) {
+            return `
+                <div class="stat-box">
+                    <h4>${label}</h4>
+                    <p>データ不足</p>
+                </div>
+            `;
+        }
+
         const sig = evaluateSignificance(stat.p);
         const mathStr = `\\(F(${stat.df1}, ${stat.df2}) = ${stat.F.toFixed(2)}, ${formatPValue(stat.p)}\\)`;
+
         return `
             <div class="stat-box">
                 <h4>${label}</h4>
@@ -260,11 +358,11 @@ function renderAnovaTab() {
 
     container.innerHTML = `
         <div class="result-card">
-            <h3>${titles[currentActiveTab]} の Type II 二元配置分散分析</h3>
+            <h3>${titles[currentActiveTab]}</h3>
             <div class="stat-grid">
-                ${buildStatBox('被験者の主効果', data.player)}
+                ${buildStatBox('プレイヤーの主効果', data.player)}
                 ${buildStatBox('球速の主効果', data.speed)}
-                ${buildStatBox('交互作用 (被験者×球速)', data.interaction)}
+                ${buildStatBox('プレイヤー × 球速の交互作用', data.interaction)}
             </div>
             <div class="insight-box">
                 ${staticInsights[currentActiveTab]}
@@ -283,52 +381,117 @@ function getMean(array) {
 }
 
 function renderComparisonCharts(selectedPlayers, selectedSpeeds, selectedCourses) {
-    const datasetsX = [], datasetsY = [], datasetsZ = [];
+    const datasetsX = [];
+    const datasetsY = [];
+    const datasetsZ = [];
 
     selectedSpeeds.forEach((speed, i) => {
-        const dataX = [], dataY = [], dataZ = [];
+        const dataX = [];
+        const dataY = [];
+        const dataZ = [];
         const color = speedColors[i % speedColors.length];
 
         selectedPlayers.forEach(player => {
-            const filtered = logData.filter(d => 
-                String(d.player) === String(player) && 
-                String(d.speed) === String(speed) && 
+            const filtered = logData.filter(d =>
+                String(d.player) === String(player) &&
+                String(d.speed) === String(speed) &&
                 selectedCourses.includes(String(d.course))
             );
+
             dataX.push(getMean(filtered.map(d => (d.mitt_x - d.target_x) * 100)));
             dataY.push(getMean(filtered.map(d => (d.mitt_y - d.target_y) * 100)));
             dataZ.push(getMean(filtered.map(d => (d.mitt_z - d.target_z) * 100)));
         });
 
-        const baseDataset = { label: speed, backgroundColor: color, borderWidth: 1 };
+        const baseDataset = {
+            label: formatSpeedLabel(speed),
+            backgroundColor: color,
+            borderWidth: 1
+        };
+
         datasetsX.push({ ...baseDataset, data: dataX });
         datasetsY.push({ ...baseDataset, data: dataY });
         datasetsZ.push({ ...baseDataset, data: dataZ });
     });
 
-    drawBarChart('meanChartX', selectedPlayers, datasetsX, '平均 水平誤差 [cm]', chartX, (c) => chartX = c);
-    drawBarChart('meanChartY', selectedPlayers, datasetsY, '平均 垂直誤差 [cm]', chartY, (c) => chartY = c);
-    drawBarChart('meanChartZ', selectedPlayers, datasetsZ, '平均 奥行誤差 [cm]', chartZ, (c) => chartZ = c);
+    drawBarChart(
+        'meanChartX',
+        selectedPlayers,
+        datasetsX,
+        '平均誤差 [cm]（左 − / 右 +）',
+        chartX,
+        (c) => chartX = c
+    );
+
+    drawBarChart(
+        'meanChartY',
+        selectedPlayers,
+        datasetsY,
+        '平均誤差 [cm]（下 − / 上 +）',
+        chartY,
+        (c) => chartY = c
+    );
+
+    drawBarChart(
+        'meanChartZ',
+        selectedPlayers,
+        datasetsZ,
+        '平均誤差 [cm]（後方 − / 前方 +）',
+        chartZ,
+        (c) => chartZ = c
+    );
 }
 
 function drawBarChart(canvasId, labels, datasets, yLabel, chartInstance, setChartInstance) {
     if (chartInstance) chartInstance.destroy();
+
     const ctx = document.getElementById(canvasId).getContext('2d');
 
     const newChart = new Chart(ctx, {
         type: 'bar',
-        data: { labels: labels, datasets: datasets },
+        data: {
+            labels: labels,
+            datasets: datasets
+        },
         options: {
-            responsive: true, maintainAspectRatio: false,
+            responsive: true,
+            maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'top' },
-                tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw !== null ? ctx.raw.toFixed(1) : 'N/A'} cm` } }
+                legend: {
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => {
+                            const value = ctx.raw !== null ? ctx.raw.toFixed(1) : 'N/A';
+                            return `${ctx.dataset.label}: ${value} cm`;
+                        }
+                    }
+                }
             },
             scales: {
-                y: { title: { display: true, text: yLabel }, grid: { color: '#eee', drawBorder: true } },
-                x: { title: { display: true, text: 'プレイヤー' }, grid: { display: false } }
+                y: {
+                    title: {
+                        display: true,
+                        text: yLabel
+                    },
+                    grid: {
+                        color: '#eee',
+                        drawBorder: true
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'プレイヤー'
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
             }
         }
     });
+
     setChartInstance(newChart);
 }

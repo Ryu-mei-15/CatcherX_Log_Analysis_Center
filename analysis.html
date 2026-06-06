@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CatcherX: Interactive Data Appendix</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%%22 y=%2250%%22 style=%22dominant-baseline:central;text-anchor:middle;font-size:90px;%22>⚾</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <header class="main-header">
+        <p class="Play Log Analysis">Interactive Data Appendix</p>
+        <h1>CatcherX: 配球と捕球を統合したVR捕手シミュレータ</h1>
+
+        <p class="header-lead">
+            本ページでは，論文中で用いたプレイログの一部を対象に，
+            捕球時のミット位置と投球の目標到達点の差分を可視化する．
+            プレイヤー，球速，投球コースを切り替えることで，
+            条件ごとの捕球誤差の分布を確認できる．
+        </p>
+
+        <div class="header-actions">
+            <a href="index.html" class="header-link-btn">CatcherX概要に戻る</a>
+            <a href="anova.html" class="header-link-btn">二元配置分散分析の結果を見る</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <section id="dashboard" class="card">
+            <h2>捕球誤差の分布可視化</h2>
+
+            <p class="page-lead">
+                各プロットは，投球の目標到達点に対して，
+                プレイヤーが実際にミットを動かして捕球した位置の差分を示している．
+                横方向，縦方向，奥行き方向のずれを比較することで，
+                球速や投球コースの違いに応じたミット操作の傾向を確認できる．
+            </p>
+            
+            <div class="controls-grid">
+                <div class="filter-column">
+                    <div class="filter-section">
+                        <div class="filter-header">
+                            <h3>プレイヤー</h3>
+                            <div class="filter-actions">
+                                <button type="button" class="action-btn select-all" data-target="player">全選択</button>
+                                <button type="button" class="action-btn deselect-all" data-target="player">全解除</button>
+                            </div>
+                        </div>
+                        <div id="playerCheckboxes" class="checkbox-group"></div>
+                    </div>
+
+                    <div class="filter-section" style="margin-top: 2rem;">
+                        <div class="filter-header">
+                            <h3>球速</h3>
+                            <div class="filter-actions">
+                                <button type="button" class="action-btn select-all" data-target="speed">全選択</button>
+                                <button type="button" class="action-btn deselect-all" data-target="speed">全解除</button>
+                            </div>
+                        </div>
+                        <div id="speedCheckboxes" class="checkbox-group"></div>
+                    </div>
+                </div>
+
+                <div class="filter-section zone-section">
+                    <div class="filter-header">
+                        <h3>投球コース（捕手視点・右打者）</h3>
+                        <div class="filter-actions">
+                            <button type="button" class="action-btn select-all" data-target="course">全選択</button>
+                            <button type="button" class="action-btn select-strike-zone">ストライクゾーン</button>
+                            <button type="button" class="action-btn deselect-all" data-target="course">全解除</button>
+                        </div>
+                    </div>
+                    <div class="sz-wrapper">
+                        <div class="batter-box">
+                            <span class="batter-icon">👤</span>
+                            <span class="batter-label">右打者</span>
+                        </div>
+                        <div class="sz-grid-container">
+                            <div class="sz-strike-zone-border"></div>
+                            <div class="sz-grid" id="courseGrid"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-heading" style="margin-top: 2rem;">
+                <h3>分析1：捕球結果ごとの誤差分布</h3>
+                <span id="filterStatus1" class="filter-status"></span>
+            </div>
+
+            <p class="analysis-description">
+                マーカーの形状は捕球結果を示す．
+                正常捕球，パスボール，暴投，見送りを区別することで，
+                捕球成否とミット位置のずれの関係を確認できる．
+            </p>
+
+            <div class="charts-wrapper">
+                <div class="chart-box">
+                    <h3 class="chart-title">XY平面（水平方向 × 垂直方向）</h3>
+                    <div class="canvas-container">
+                        <canvas id="errorChartXY"></canvas>
+                    </div>
+                </div>
+                <div class="chart-box">
+                    <h3 class="chart-title">ZY平面（奥行き方向 × 垂直方向）</h3>
+                    <div class="canvas-container">
+                        <canvas id="errorChartZY"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="legend-box" style="margin-bottom: 4rem;">
+                <strong>凡例</strong>
+                <div class="legend-inline">
+                    <span>色：プレイヤー</span>
+                    <span><span class="marker-sample">○</span>正常捕球</span>
+                    <span><span class="marker-sample">□</span>パスボール</span>
+                    <span><span class="marker-sample">×</span>暴投</span>
+                    <span><span class="marker-sample">△</span>見送り</span>
+                </div>
+            </div>
+
+            <div class="section-heading">
+                <h3>分析2：投球コースごとの誤差分布</h3>
+                <span id="filterStatus2" class="filter-status"></span>
+            </div>
+
+            <p class="analysis-description">
+                マーカーの向きは，右打者に対する投球コースを示す．
+                塗りつぶしのマーカーはストライク判定，
+                白抜きのマーカーはボール判定または捕球失敗を含む結果を示す．
+            </p>
+
+            <div class="charts-wrapper">
+                <div class="chart-box">
+                    <h3 class="chart-title">XY平面（コース別）</h3>
+                    <div class="canvas-container">
+                        <canvas id="errorChartCourseXY"></canvas>
+                    </div>
+                </div>
+                <div class="chart-box">
+                    <h3 class="chart-title">ZY平面（コース別）</h3>
+                    <div class="canvas-container">
+                        <canvas id="errorChartCourseZY"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="legend-box legend-box-left">
+                <strong>分析2プロットの見方</strong>
+                <ul class="legend-list">
+                    <li><span class="legend-key">線の色</span>：プレイヤーごとの識別</li>
+                    <li><span class="legend-key">塗りつぶし太矢印</span>：最終判定がストライクになった球</li>
+                    <li><span class="legend-key">白抜き細矢印</span>：最終判定がボール，パスボール，暴投を含む球</li>
+                    <li><span class="legend-key">丸印</span>：中央コースの球</li>
+                </ul>
+            </div>
+            
+            <p class="chart-caption">
+                ※ 表示上の外れ値の影響を抑えるため，誤差は±38 cmの範囲にクリッピングして表示している．
+            </p>
+        </section>
+
+    <footer class="site-footer">
+        <p>
+            CatcherX Research Supplement<br>
+            山口 瑞悠・藤井 叙人・橋田 光代  
+            （福知山公立大学 情報学部 情報学科）
+        </p>
+        <p>
+            <a href="index.html">CatcherX概要に戻る</a>
+        </p>
+    </footer>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

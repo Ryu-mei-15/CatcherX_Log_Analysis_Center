@@ -3,136 +3,288 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EC2026 Data Appendix</title>
-    
+    <title>CatcherX: VR Catcher Simulator</title>
+
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%%22 y=%2250%%22 style=%22dominant-baseline:central;text-anchor:middle;font-size:90px;%22>⚾</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .overview-card {
+            background: #fafbfc;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .overview-card h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.15rem;
+        }
+
+        .overview-card p {
+            margin-bottom: 0;
+            line-height: 1.85;
+        }
+
+        .flow-list {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .flow-item {
+            display: grid;
+            grid-template-columns: 3.5rem 1fr;
+            gap: 1rem;
+            align-items: start;
+            background: #fafbfc;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.2rem;
+        }
+
+        .flow-number {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .flow-item h3 {
+            margin: 0 0 0.4rem 0;
+            color: var(--primary-color);
+        }
+
+        .flow-item p {
+            margin: 0;
+            line-height: 1.85;
+        }
+
+        .link-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .link-card {
+            display: block;
+            text-decoration: none;
+            background: var(--primary-fade);
+            border: 1px solid var(--primary-light);
+            border-radius: 16px;
+            padding: 1.6rem;
+            color: var(--text-main);
+            transition: all 0.2s;
+        }
+
+        .link-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            background: white;
+        }
+
+        .link-card strong {
+            display: block;
+            color: var(--primary-color);
+            font-size: 1.15rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .note-box {
+            background: #fff;
+            border-left: 6px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 1.4rem 1.6rem;
+            box-shadow: var(--shadow-sm);
+            line-height: 1.9;
+        }
+    </style>
 </head>
 <body>
 
     <header class="main-header">
-        <h1>CatcherX: 配球と捕球を統合したVRコンテンツ</h1>
-        <p class="author">山口 瑞悠（福知山公立大学 情報学部 情報学科）</p>
-        <p class="author">藤井 叙人（福知山公立大学 情報学部 情報学科）</p>
-        <p class="author">橋田 光代（福知山公立大学 情報学部 情報学科）</p>
-        
-        <div style="margin-top: 2rem;">
-            <a href="anova.html" class="header-link-btn">二元配置分散分析 (ANOVA) レポートを見る ➔</a>
+        <p class="header-subtitle">VR Catcher Simulator</p>
+        <h1>CatcherX</h1>
+
+        <div class="header-authors">
+            <p class="author">配球判断と捕球動作を統合したVR捕手シミュレータ</p>
+        </div>
+
+        <div class="header-authors">
+            <p class="author">山口 瑞悠（福知山公立大学 情報学部 情報学科）</p>
+            <p class="author">藤井 叙人（福知山公立大学 情報学部 情報学科）</p>
+            <p class="author">橋田 光代（福知山公立大学 情報学部 情報学科）</p>
+        </div>
+
+        <p class="header-lead">
+            CatcherXは，捕手が行う「次の球を考える」「構える」「飛来球に身体で介入する」
+            「結果を受け取って次の配球を考える」という一連の過程を，
+            VR空間上で体験可能にすることを目指したシステムである．
+        </p>
+
+        <div class="header-actions">
+            <a href="analysis.html" class="header-link-btn">プレイログ分析を見る</a>
+            <a href="anova.html" class="header-link-btn">要因分析を見る</a>
         </div>
     </header>
 
-    <div class="container">
-        <section id="dashboard" class="card">
-            <h2>捕球時のミットの移動量 インタラクティブ分析</h2>
-            
-            <div class="controls-grid">
-                <div class="filter-column">
-                    <div class="filter-section">
-                        <div class="filter-header">
-                            <h3>プレイヤー (Player)</h3>
-                            <div class="filter-actions">
-                                <button class="action-btn select-all" data-target="player">全選択</button>
-                                <button class="action-btn deselect-all" data-target="player">全解除</button>
-                            </div>
-                        </div>
-                        <div id="playerCheckboxes" class="checkbox-group"></div>
-                    </div>
-                    <div class="filter-section" style="margin-top: 2rem;">
-                        <div class="filter-header">
-                            <h3>球速</h3>
-                            <div class="filter-actions">
-                                <button class="action-btn select-all" data-target="speed">全選択</button>
-                                <button class="action-btn deselect-all" data-target="speed">全解除</button>
-                            </div>
-                        </div>
-                        <div id="speedCheckboxes" class="checkbox-group"></div>
-                    </div>
+    <main class="container">
+
+        <section class="card">
+            <h2>CatcherXとは</h2>
+            <p class="page-lead">
+                CatcherXは，野球における捕手の体験に焦点を当てたVRコンテンツである．
+                従来の野球ゲームやVRコンテンツでは，投手や打者の体験が中心となることが多く，
+                捕手の配球判断や捕球動作はシステム側の自動処理として扱われやすかった．
+                CatcherXでは，プレイヤが捕手として球種やコースを選択し，
+                その予測に基づいてミットを構え，実際に飛来するボールに対して身体的に介入する．
+            </p>
+
+            <div class="overview-grid">
+                <div class="overview-card">
+                    <h3>配球を考える</h3>
+                    <p>
+                        プレイヤは球種とコースを選択し，次に来る投球を自ら決定する．
+                        これにより，単に飛来球を待つのではなく，捕手として予測を形成する体験を生み出す．
+                    </p>
                 </div>
 
-                <div class="filter-section zone-section">
-                    <div class="filter-header">
-                        <h3>投球コース（捕手目線・右打者）</h3>
-                        <div class="filter-actions">
-                            <button class="action-btn select-all" data-target="course">全選択</button>
-                            <button class="action-btn select-strike-zone">ストライクゾーン</button>
-                            <button class="action-btn deselect-all" data-target="course">全解除</button>
-                        </div>
-                    </div>
-                    <div class="sz-wrapper">
-                        <div class="batter-box">
-                            <span class="batter-icon">👤</span>
-                            <span class="batter-label">右打者</span>
-                        </div>
-                        <div class="sz-grid-container">
-                            <div class="sz-strike-zone-border"></div>
-                            <div class="sz-grid" id="courseGrid"></div>
-                        </div>
-                    </div>
+                <div class="overview-card">
+                    <h3>投球を受ける</h3>
+                    <p>
+                        システムは選択された配球に基づいて投球軌道を生成する．
+                        制球のぶれを加えることで，プレイヤは予測と実際の軌道との差を認識しながらミットを補正する．
+                    </p>
                 </div>
-            </div>
 
-            <div class="section-heading" style="margin-top: 2rem;">
-                <h3>分析1：捕球結果（成否）による分布</h3>
-                <span id="filterStatus1" class="filter-status"></span>
-            </div>
-            <div class="charts-wrapper">
-                <div class="chart-box">
-                    <h3 class="chart-title">XY平面 (水平 vs 垂直)</h3>
-                    <div class="canvas-container">
-                        <canvas id="errorChartXY"></canvas>
-                    </div>
-                </div>
-                <div class="chart-box">
-                    <h3 class="chart-title">ZY平面 (深度 vs 垂直)</h3>
-                    <div class="canvas-container">
-                        <canvas id="errorChartZY"></canvas>
-                    </div>
+                <div class="overview-card">
+                    <h3>次の配球へつなげる</h3>
+                    <p>
+                        捕球結果や打者反応を提示することで，プレイヤは前球の結果を解釈し，
+                        次の球種・コースを再考する．
+                    </p>
                 </div>
             </div>
-            <div class="legend-box" style="margin-bottom: 4rem;">
-                <strong>【凡例】</strong> 
-                色: プレイヤーごと / 
-                形状: <span class="marker-sample">〇</span> Perfect (正常捕球) &nbsp; 
-                <span class="marker-sample">□</span> Dropped (パスボール) &nbsp; 
-                <span class="marker-sample">×</span> WildPitch (暴投) &nbsp;
-                <span class="marker-sample">△</span> Ignored (見逃し)
-            </div>
-
-            <div class="section-heading">
-                <h3>分析2：投球コースによる分布</h3>
-                <span id="filterStatus2" class="filter-status"></span>
-            </div>
-            <div class="charts-wrapper">
-                <div class="chart-box">
-                    <h3 class="chart-title">XY平面 (コース別)</h3>
-                    <div class="canvas-container">
-                        <canvas id="errorChartCourseXY"></canvas>
-                    </div>
-                </div>
-                <div class="chart-box">
-                    <h3 class="chart-title">ZY平面 (コース別)</h3>
-                    <div class="canvas-container">
-                        <canvas id="errorChartCourseZY"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="legend-box" style="text-align: left; max-width: 600px; margin: 0 auto;">
-                <strong>【分析2プロットの見方】</strong><br>
-                マーカーの矢印の「向き」は，右打者から見た投球コースを示します．<br>
-                <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: #555;">
-                    <li><span style="font-weight:bold; color:var(--primary-color);">線の色</span>: プレイヤーごとの識別</li>
-                    <li><span style="font-weight:bold;">塗りつぶし太矢印</span>: 最終判定が <b>Strike</b> になった球</li>
-                    <li><span style="font-weight:bold;">白抜き細矢印</span>: 最終判定が <b>Ball / PassedBall / WildPitch</b> の球</li>
-                    <li><span style="font-weight:bold;">● (丸)</span>: ど真ん中（Center）の球</li>
-                </ul>
-            </div>
-            
-            <p class="chart-caption" style="margin-top: 2rem;">※ 誤差は ±38cm でクリッピングして表示しています．</p>
         </section>
-    </div>
 
-    <script src="app.js"></script>
+        <section class="card">
+            <h2>開発の背景</h2>
+            <p class="page-lead">
+                野球における捕手は，投手に対する球種・コースの要求，飛来球の捕球，
+                打者反応の観察，次配球の判断を連続的に行う特異なポジションである．
+                しかし，既存のコンテンツでは，捕手の役割は「投球を受け止める対象」や
+                「結果を表示する処理」として抽象化されることが多い．
+            </p>
+
+            <p class="page-lead">
+                CatcherXは，捕手の体験を単発の捕球動作としてではなく，
+                配球判断と知覚・運動が循環するインタラクションとして扱う．
+                これにより，プレイヤが自ら予測し，身体で補正し，結果をもとに次の判断へ進む
+                捕手特有のプレイをVR空間内に再構成することを目指している．
+            </p>
+        </section>
+
+        <section class="card">
+            <h2>体験の流れ</h2>
+
+            <div class="flow-list">
+                <div class="flow-item">
+                    <div class="flow-number">1</div>
+                    <div>
+                        <h3>配球選択</h3>
+                        <p>
+                            プレイヤは球種とコースを選択する．
+                            この操作によって，次に来る投球に対する予測が形成される．
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flow-item">
+                    <div class="flow-number">2</div>
+                    <div>
+                        <h3>投球軌道の生成</h3>
+                        <p>
+                            システムは，選択された球種・コースを基準に投球軌道を生成する．
+                            実験条件に応じて制球誤差を加え，予測通りには来ない投球を提示する．
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flow-item">
+                    <div class="flow-number">3</div>
+                    <div>
+                        <h3>捕球への身体的介入</h3>
+                        <p>
+                            プレイヤは，事前の予測と実際の投球軌道との差を視覚的に認識し，
+                            ミット位置を補正しながら捕球を試みる．
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flow-item">
+                    <div class="flow-number">4</div>
+                    <div>
+                        <h3>結果提示と次配球</h3>
+                        <p>
+                            捕球結果，ボール・ストライク判定，打者反応を提示する．
+                            プレイヤはこれらの情報をもとに，次の球種・コースを再考する．
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>実験データと分析ページ</h2>
+            <p class="page-lead">
+                本サイトでは，論文中で用いたプレイログの一部を公開し，
+                捕球時のミット位置と投球目標点との差分を可視化している．
+                プレイヤー，球速，投球コースを切り替えることで，
+                条件ごとの捕球誤差や分散分析の結果を確認できる．
+            </p>
+
+            <div class="link-card-grid">
+                <a href="analysis.html" class="link-card">
+                    <strong>捕球誤差の分布可視化</strong>
+                    XY平面およびZY平面における捕球誤差を，
+                    プレイヤー・球速・投球コースごとに確認できる．
+                </a>
+
+                <a href="anova.html" class="link-card">
+                    <strong>二元配置分散分析</strong>
+                    プレイヤーと球速を要因として，
+                    X軸，Y軸，Z軸方向の捕球誤差に対する統計解析を確認できる．
+                </a>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>本ページの位置づけ</h2>
+            <div class="note-box">
+                本ページは，CatcherXに関する研究の補足資料として作成したものである．
+                システムの概要，実験で取得したプレイログの可視化，および統計解析結果を公開し，
+                論文中で示した分析の理解を補助することを目的としている．
+            </div>
+        </section>
+
+    </main>
+
 </body>
 </html>
