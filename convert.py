@@ -2,6 +2,7 @@ import pandas as pd
 import glob
 import json
 import os
+import math
 
 # データの読み込み先をGitリポジトリ内のDataディレクトリに変更
 DATA_DIR = '/Users/yamaguchimiyu/Git/CatcherX_Log_Analysis_Center/DataCourse'
@@ -33,16 +34,37 @@ for file_path in csv_files:
     try:
         df = pd.read_csv(file_path)
         for _, row in df.iterrows():
+            tx = row.get("Target_Pos_X", 0)
+            ty = row.get("Target_Pos_Y", 0)
+            tz = row.get("Target_Pos_Z", 0)
+            mx = row.get("Mitt_Catch_X", 0)
+            my = row.get("Mitt_Catch_Y", 0)
+            mz = row.get("Mitt_Catch_Z", 0)
+
+            # 誤差の算出 (cm単位に変換)
+            diff_x = (mx - tx) * 100
+            diff_y = (my - ty) * 100
+            diff_z = (mz - tz) * 100
+
+            # 補正量（目標点から実際のミット位置までの絶対的距離）
+            correction_2d = math.sqrt(diff_x**2 + diff_y**2)
+            correction_3d = math.sqrt(diff_x**2 + diff_y**2 + diff_z**2)
+
             record = {
                 "player": player_name,
                 "speed": speed,
                 "course": str(row.get("Selected_Course_Zone", "Unknown")),
-                "target_x": row.get("Target_Pos_X", 0),
-                "target_y": row.get("Target_Pos_Y", 0),
-                "target_z": row.get("Target_Pos_Z", 0),
-                "mitt_x": row.get("Mitt_Catch_X", 0),
-                "mitt_y": row.get("Mitt_Catch_Y", 0),
-                "mitt_z": row.get("Mitt_Catch_Z", 0),
+                "target_x": tx,
+                "target_y": ty,
+                "target_z": tz,
+                "mitt_x": mx,
+                "mitt_y": my,
+                "mitt_z": mz,
+                "diff_x_cm": diff_x,
+                "diff_y_cm": diff_y,
+                "diff_z_cm": diff_z,
+                "correction_2d_cm": correction_2d,
+                "correction_3d_cm": correction_3d,
                 "catch_result": str(row.get("Catch_Result", ""))
             }
             combined_data.append(record)
@@ -54,4 +76,4 @@ output_path = "data.json"
 with open(output_path, "w", encoding="utf-8") as f:
     json.dump(combined_data, f, ensure_ascii=False, indent=2)
 
-print(f"完了: 合計 {len(combined_data)} 件のログを {output_path} に書き出しました．")
+print(f"完了: 合計 {len(combined_data)} 件のログを {output_path} に書き出し，ミット補正量を付与しました．")

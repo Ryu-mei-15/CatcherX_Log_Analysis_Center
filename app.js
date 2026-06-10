@@ -2,6 +2,7 @@ let chartXY = null;
 let chartZY = null;
 let chartCourseXY = null;
 let chartCourseZY = null;
+let chartCorrection = null; // ▼ 追加：補正量グラフ用
 let logData = [];
 
 const colorPalette = [
@@ -298,6 +299,11 @@ function getCourseSelectionText(selectedCourses, totalCourses) {
     return `${selectedCourses.length}コース`;
 }
 
+function getMean(array) {
+    if (array.length === 0) return null;
+    return array.reduce((a, b) => a + b, 0) / array.length;
+}
+
 function renderChart() {
     const selectedPlayers = getCheckedValues('player');
     const selectedSpeeds = getCheckedValues('speed');
@@ -315,9 +321,11 @@ function renderChart() {
 
     const status1 = document.getElementById('filterStatus1');
     const status2 = document.getElementById('filterStatus2');
+    const status3 = document.getElementById('filterStatus3'); // ▼ 追加
 
     if (status1) status1.textContent = statusText;
     if (status2) status2.textContent = statusText;
+    if (status3) status3.textContent = statusText; // ▼ 追加
 
     const datasetsXY = [];
     const datasetsZY = [];
@@ -455,6 +463,9 @@ function renderChart() {
         chartCourseZY,
         (c) => chartCourseZY = c
     );
+
+    // ▼ 追加：分析3（平均補正量）の描画処理を呼び出し
+    renderCorrectionChart(selectedPlayers, selectedSpeeds, selectedCourses);
 }
 
 function drawChart(canvasId, datasets, xLabel, chartInstance, setChartInstance) {
@@ -524,4 +535,94 @@ function drawChart(canvasId, datasets, xLabel, chartInstance, setChartInstance) 
     });
 
     setChartInstance(newChart);
+}
+
+// ▼ 追加：平均ミット補正量の棒グラフ描画ロジック
+function renderCorrectionChart(selectedPlayers, selectedSpeeds, selectedCourses) {
+    // 選択されたコースのうち、ストライクゾーン9コースのみを対象として抽出
+    const targetCourses = selectedCourses.filter(c => strikeZoneCourses.includes(c));
+
+    const datasets = [];
+
+    selectedSpeeds.forEach((speed, i) => {
+        const data = [];
+        const color = colorPalette[i % colorPalette.length];
+
+        selectedPlayers.forEach(player => {
+            const filtered = logData.filter(d =>
+                String(d.player) === String(player) &&
+                String(d.speed) === String(speed) &&
+                targetCourses.includes(String(d.course))
+            );
+
+            // Python側で計算した correction_2d_cm を使用（もし未計算の古いデータがあればJSでフォールバック計算）
+            const meanVal = getMean(filtered.map(d => {
+                if (d.correction_2d_cm !== undefined) {
+                    return d.correction_2d_cm;
+                } else {
+                    const diffX = (d.mitt_x - d.target_x) * 100;
+                    const diffY = (d.mitt_y - d.target_y) * 100;
+                    return Math.sqrt(diffX * diffX + diffY * diffY);
+                }
+            }));
+
+            data.push(meanVal);
+        });
+
+        datasets.push({
+            label: formatSpeedLabel(speed),
+            backgroundColor: color,
+            borderWidth: 1,
+            data: data
+        });
+    });
+
+    if (chartCorrection) chartCorrection.destroy();
+
+    const ctx = document.getElementById('correctionChart').getContext('2d');
+    chartCorrection = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: selectedPlayers,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => {
+                            const value = ctx.raw !== null ? ctx.raw.toFixed(1) : 'N/A';
+                            return `${ctx.dataset.label}: ${value} cm`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: '平均ミット補正量 [cm]'
+                    },
+                    grid: {
+                        color: '#eee',
+                        drawBorder: true
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'プレイヤー'
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
 }

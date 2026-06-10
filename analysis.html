@@ -151,7 +151,7 @@
                 </div>
             </div>
 
-            <div class="legend-box legend-box-left">
+            <div class="legend-box legend-box-left" style="margin-bottom: 4rem;">
                 <strong>分析2プロットの見方</strong>
                 <ul class="legend-list">
                     <li><span class="legend-key">線の色</span>：プレイヤーごとの識別</li>
@@ -160,9 +160,28 @@
                     <li><span class="legend-key">丸印</span>：中央コースの球</li>
                 </ul>
             </div>
+
+            <div class="section-heading">
+                <h3>分析3：ストライクゾーンにおける平均ミット補正量</h3>
+                <span id="filterStatus3" class="filter-status"></span>
+            </div>
+
+            <p class="analysis-description">
+                選択中のコースのうち，<strong>ストライクゾーン9コースのみ</strong>を対象として，ボール到達目標点から実際に捕球したミット位置までの絶対的な移動距離（補正量）の平均を球速ごとに比較する．
+                値が大きいほど，投球の軌道に対して大きくミットを動かして介入したことを示す．
+            </p>
+
+            <div class="charts-wrapper" style="grid-template-columns: 1fr;">
+                <div class="chart-box">
+                    <h3 class="chart-title">XY平面における平均補正量 [cm]</h3>
+                    <div class="canvas-container" style="height: 380px;">
+                        <canvas id="correctionChart"></canvas>
+                    </div>
+                </div>
+            </div>
             
             <p class="chart-caption">
-                ※ 表示上の外れ値の影響を抑えるため，誤差は±38 cmの範囲にクリッピングして表示している．
+                ※ 表示上の外れ値の影響を抑えるため，散布図の誤差は±38 cmの範囲にクリッピングして表示している．
             </p>
         </section>
 
