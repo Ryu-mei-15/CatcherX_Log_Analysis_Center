@@ -171,7 +171,7 @@
                 値が大きいほど，投球の軌道に対して大きくミットを動かして介入したことを示す．
             </p>
 
-            <div class="charts-wrapper" style="grid-template-columns: 1fr;">
+            <div class="charts-wrapper" style="grid-template-columns: 1fr; margin-bottom: 4rem;">
                 <div class="chart-box">
                     <h3 class="chart-title">XY平面における平均補正量 [cm]</h3>
                     <div class="canvas-container" style="height: 380px;">
@@ -179,10 +179,29 @@
                     </div>
                 </div>
             </div>
-            
-            <p class="chart-caption">
-                ※ 表示上の外れ値の影響を抑えるため，散布図の誤差は±38 cmの範囲にクリッピングして表示している．
+
+            <div class="section-heading">
+                <h3>分析4：制球誤差とミット補正量の相関関係</h3>
+                <span id="filterStatus4" class="filter-status"></span>
+            </div>
+
+            <p class="analysis-description">
+                横軸に「制球誤差（システム側から与えられたノイズ量）」，縦軸に「ミット補正量（プレイヤーの介入量）」をとった散布図である．
+                回帰直線および相関係数（\( r \)）が 1 に近いほど，システム側の制球のブレに対してプレイヤーが完璧に追従してミットを操作できていることを意味する．<br>
+                ※ 空間的なスケールを正確に比較するため，<strong>横軸(25cm)と縦軸(40cm)の比率に合わせてグラフを長方形（25:40）に描画し，グリッドが正方形になるよう統一</strong>している．<br>
+                ※ 実験条件に基づき，<strong>制球誤差が 25 cm，またはミット補正量が 40 cm を超過するデータは外れ値として除外</strong>している．<br>
+                ※ マーカーの<strong>塗りつぶしは捕球成功，中抜きは捕球失敗</strong>（パスボール，暴投，見送り）を示す．
             </p>
+
+            <div class="charts-wrapper" style="grid-template-columns: 1fr;">
+                <div class="chart-box">
+                    <h3 class="chart-title">制球誤差 × ミット補正量 の相関</h3>
+                    <div class="canvas-container" style="width: 100%; max-width: 450px; aspect-ratio: 25 / 40; height: auto; margin: 0 auto;">
+                        <canvas id="correlationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
         </section>
 
     <footer class="site-footer">

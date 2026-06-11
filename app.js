@@ -2,7 +2,8 @@ let chartXY = null;
 let chartZY = null;
 let chartCourseXY = null;
 let chartCourseZY = null;
-let chartCorrection = null; // ▼ 追加：補正量グラフ用
+let chartCorrection = null; 
+let chartCorrelation = null; 
 let logData = [];
 
 const colorPalette = [
@@ -304,6 +305,38 @@ function getMean(array) {
     return array.reduce((a, b) => a + b, 0) / array.length;
 }
 
+// ピアソン積率相関係数・最小二乗法の計算
+function calculateCorrelation(points) {
+    const n = points.length;
+    if (n <= 1) return { r: 0, a: 0, b: 0, minX: 0, maxX: 0 };
+    
+    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
+    let minX = Infinity, maxX = -Infinity;
+    
+    points.forEach(p => {
+        sumX += p.x;
+        sumY += p.y;
+        sumXY += p.x * p.y;
+        sumX2 += p.x * p.x;
+        sumY2 += p.y * p.y;
+        if (p.x < minX) minX = p.x;
+        if (p.x > maxX) maxX = p.x;
+    });
+    
+    const meanX = sumX / n;
+    const meanY = sumY / n;
+    
+    const numerator = sumXY - n * meanX * meanY;
+    const denominatorX = sumX2 - n * meanX * meanX;
+    const denominatorY = sumY2 - n * meanY * meanY;
+    
+    const r = (denominatorX * denominatorY === 0) ? 0 : numerator / Math.sqrt(denominatorX * denominatorY);
+    const a = denominatorX === 0 ? 0 : numerator / denominatorX; // 傾き
+    const b = meanY - a * meanX; // 切片
+    
+    return { r, a, b, minX, maxX };
+}
+
 function renderChart() {
     const selectedPlayers = getCheckedValues('player');
     const selectedSpeeds = getCheckedValues('speed');
@@ -321,11 +354,13 @@ function renderChart() {
 
     const status1 = document.getElementById('filterStatus1');
     const status2 = document.getElementById('filterStatus2');
-    const status3 = document.getElementById('filterStatus3'); // ▼ 追加
+    const status3 = document.getElementById('filterStatus3');
+    const status4 = document.getElementById('filterStatus4');
 
     if (status1) status1.textContent = statusText;
     if (status2) status2.textContent = statusText;
-    if (status3) status3.textContent = statusText; // ▼ 追加
+    if (status3) status3.textContent = statusText;
+    if (status4) status4.textContent = statusText;
 
     const datasetsXY = [];
     const datasetsZY = [];
@@ -464,8 +499,8 @@ function renderChart() {
         (c) => chartCourseZY = c
     );
 
-    // ▼ 追加：分析3（平均補正量）の描画処理を呼び出し
     renderCorrectionChart(selectedPlayers, selectedSpeeds, selectedCourses);
+    renderCorrelationChart(selectedPlayers, selectedSpeeds, selectedCourses);
 }
 
 function drawChart(canvasId, datasets, xLabel, chartInstance, setChartInstance) {
@@ -537,11 +572,8 @@ function drawChart(canvasId, datasets, xLabel, chartInstance, setChartInstance) 
     setChartInstance(newChart);
 }
 
-// ▼ 追加：平均ミット補正量の棒グラフ描画ロジック
 function renderCorrectionChart(selectedPlayers, selectedSpeeds, selectedCourses) {
-    // 選択されたコースのうち、ストライクゾーン9コースのみを対象として抽出
     const targetCourses = selectedCourses.filter(c => strikeZoneCourses.includes(c));
-
     const datasets = [];
 
     selectedSpeeds.forEach((speed, i) => {
@@ -555,7 +587,6 @@ function renderCorrectionChart(selectedPlayers, selectedSpeeds, selectedCourses)
                 targetCourses.includes(String(d.course))
             );
 
-            // Python側で計算した correction_2d_cm を使用（もし未計算の古いデータがあればJSでフォールバック計算）
             const meanVal = getMean(filtered.map(d => {
                 if (d.correction_2d_cm !== undefined) {
                     return d.correction_2d_cm;
@@ -621,6 +652,135 @@ function renderCorrectionChart(selectedPlayers, selectedSpeeds, selectedCourses)
                     grid: {
                         display: false
                     }
+                }
+            }
+        }
+    });
+}
+
+function renderCorrelationChart(selectedPlayers, selectedSpeeds, selectedCourses) {
+    const datasets = [];
+    const allPoints = [];
+
+    // プレイヤーごとに散布図のデータセットを作成
+    selectedPlayers.forEach((player, i) => {
+        const color = colorPalette[i % colorPalette.length];
+        
+        const filtered = logData.filter(d =>
+            String(d.player) === String(player) &&
+            selectedSpeeds.includes(String(d.speed)) &&
+            selectedCourses.includes(String(d.course))
+        );
+        
+        const points = [];
+        filtered.forEach(d => {
+            const err = d.control_error_2d_cm;
+            const corr = d.correction_2d_cm;
+            
+            if (err !== undefined && corr !== undefined && !isNaN(err) && !isNaN(corr)) {
+                // 制球誤差25cm以下、かつミット補正量40cm以下のデータを有効とする
+                if (err <= 25.0 && corr <= 40.0) {
+                    // 横軸(X)＝制球誤差、縦軸(Y)＝ミット補正量
+                    points.push({ x: err, y: corr, _raw: d });
+                }
+            }
+        });
+        
+        if (points.length > 0) {
+            allPoints.push(...points);
+            datasets.push({
+                type: 'scatter',
+                label: player,
+                // 捕球結果に応じて色塗りを変更
+                backgroundColor: function(context) {
+                    const raw = context.raw;
+                    if (!raw || !raw._raw) return color;
+                    const cat = categorizeCatch(raw._raw.catch_result);
+                    if (cat === 'Perfect') {
+                        return color; // 成功時は塗りつぶし
+                    } else {
+                        return 'transparent'; // 失敗時は中抜き
+                    }
+                },
+                borderColor: color,
+                borderWidth: 2,
+                data: points,
+                pointRadius: 5,
+                pointHoverRadius: 7
+            });
+        }
+    });
+
+    const stats = calculateCorrelation(allPoints);
+
+    if (allPoints.length > 1 && stats.maxX > stats.minX) {
+        // 回帰直線を描画（X軸の最大・最小に合わせて引く）
+        const margin = (stats.maxX - stats.minX) * 0.05;
+        const lineMinX = Math.max(0, stats.minX - margin); 
+        const lineMaxX = Math.min(25, stats.maxX + margin); // X軸の最大値25に合わせる
+
+        datasets.push({
+            type: 'line',
+            label: `全体回帰直線 (r = ${stats.r.toFixed(3)})`,
+            data: [
+                { x: lineMinX, y: stats.a * lineMinX + stats.b },
+                { x: lineMaxX, y: stats.a * lineMaxX + stats.b }
+            ],
+            borderColor: 'rgba(44, 62, 80, 0.8)', 
+            borderWidth: 2,
+            borderDash: [5, 5],
+            pointRadius: 0,
+            fill: false,
+            tension: 0 
+        });
+    }
+
+    if (chartCorrelation) chartCorrelation.destroy();
+
+    const ctx = document.getElementById('correlationChart').getContext('2d');
+    chartCorrelation = new Chart(ctx, {
+        data: { datasets: datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        boxWidth: 8
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            if (context.dataset.type === 'line') {
+                                return `回帰直線: y = ${stats.a.toFixed(2)}x + ${stats.b.toFixed(2)}`;
+                            }
+                            const raw = context.raw._raw;
+                            const cat = categorizeCatch(raw.catch_result);
+                            const resultText = cat === 'Perfect' ? '成功' : '失敗';
+                            return `${raw.player} (${formatSpeedLabel(raw.speed)}): 制球誤差 ${context.parsed.x.toFixed(1)}cm, 補正量 ${context.parsed.y.toFixed(1)}cm [${resultText}]`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                // X軸は25、Y軸は40とし、目盛りを5刻みに固定して完全な正方形グリッドを作る
+                x: {
+                    title: { display: true, text: '制球誤差 [cm]' },
+                    min: 0, 
+                    max: 26, 
+                    ticks: { stepSize: 5 }, // 5cm刻みに固定
+                    grid: { color: '#eee', drawBorder: true }
+                },
+                y: {
+                    title: { display: true, text: 'ミット補正量 [cm]' },
+                    min: 0, 
+                    max: 40, 
+                    ticks: { stepSize: 5 }, // 5cm刻みに固定
+                    grid: { color: '#eee', drawBorder: true }
                 }
             }
         }
